@@ -31,8 +31,8 @@
  *   For more information about the commercial license, please refer to
  *   <http://www.minigui.com/en/about/licensing-policy/>.
  */
-#ifndef _LINUX_TYPES_H
-#define _LINUX_TYPES_H
+#ifndef _LINUX_MINIGUI__TYPES_H
+#define _LINUX_MINIGUI__TYPES_H
 
 #define unchar unsigned char
 #define ushort unsigned short
@@ -44,4 +44,4 @@
 #define u_int unsigned int
 #define u_long unsigned long
 
-#endif /* _LINUX_TYPES_H */
+#endif /* _LINUX_MINIGUI__TYPES_H */

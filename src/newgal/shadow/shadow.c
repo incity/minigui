@@ -60,11 +60,11 @@
 #include <errno.h> 
 #include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/shm.h>
-#include <sys/sem.h>
+#include <linux/shm.h>
+#include <linux/sem.h>
 #include <sys/stat.h> 
 
-union semun {
+union __deprecated__semun {
     int val;                    /* value for SETVAL */
     struct semid_ds *buf;       /* buffer for IPC_STAT, IPC_SET */
     unsigned short int *array;  /* array for GETALL, SETALL */

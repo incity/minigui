@@ -50,7 +50,7 @@
 
 #ifndef WIN32
 #include <unistd.h>
-#include <sys/termios.h>
+#include <termios.h>
 #endif
 #include <signal.h>
 

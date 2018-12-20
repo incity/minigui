@@ -64,7 +64,7 @@
 #include "devfont.h"
 
 #ifndef WIN32
-#include <sys/termios.h>
+#include <termios.h>
 #endif
 
 /******************************* global data *********************************/

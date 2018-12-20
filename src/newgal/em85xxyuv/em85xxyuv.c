@@ -52,7 +52,7 @@
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/ipc.h>
-#include <sys/sem.h>
+#include <linux/sem.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <sched.h>
@@ -77,7 +77,7 @@
 #else
 
  /* according to X/OPEN we have to define it ourselves */
-union semun {
+union __deprecated__semun {
 	int val;                  /* value for SETVAL */
 	struct semid_ds *buf;     /* buffer for IPC_STAT, IPC_SET */
 	unsigned short *array;    /* array for GETALL, SETALL */

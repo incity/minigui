@@ -48,7 +48,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/shm.h>
+#include <linux/shm.h>
 #endif
 #include "minigui.h"
 #include "misc.h"

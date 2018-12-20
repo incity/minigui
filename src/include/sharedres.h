@@ -41,7 +41,7 @@
     #define GUI_SHAREDRES_H
 
 #include <sys/time.h>
-#include <sys/termios.h>
+#include <termios.h>
 
 #define MAX_SRV_CLIP_RECTS      8
 

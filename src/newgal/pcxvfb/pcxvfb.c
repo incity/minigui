@@ -62,8 +62,8 @@ typedef int key_t;
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/shm.h>
-#include <sys/sem.h>
+#include <linux/shm.h>
+#include <linux/sem.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -112,7 +112,7 @@ static int semid;
 
 static int shm_init_lock(key_t key)
 {
-    union semun {
+    union __deprecated__semun {
         int val;
         struct semid_ds* buf;
         unsigned short* array;

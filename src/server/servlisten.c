@@ -45,7 +45,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
-#include <sys/fcntl.h>
+#include <linux/fcntl.h>
 #include <sys/un.h>
 #include <string.h>
 #include <unistd.h>

@@ -38,7 +38,7 @@
 */
 
 #include <stdio.h>
-#include <sys/fcntl.h>
+#include <linux/fcntl.h>
 
 #ifdef SIGNAL_SOCKET_TEST
 #include <sys/socket.h>

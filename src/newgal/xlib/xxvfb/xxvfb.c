@@ -37,9 +37,9 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/ipc.h>
-#include <sys/shm.h>
+#include <linux/shm.h>
 #include <sys/stat.h>
-#include <sys/sem.h>
+#include <linux/sem.h>
 
 #include "define.h"
 #include "xxvfbhdr.h"

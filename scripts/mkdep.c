@@ -38,7 +38,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <sys/fcntl.h>
+#include <linux/fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>

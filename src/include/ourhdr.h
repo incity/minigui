@@ -51,8 +51,8 @@
 #include <unistd.h>        /* for convenience */
 #include <syslog.h>        /* for convenience */
 #include <sys/ipc.h>
-#include <sys/sem.h>
-#include <sys/shm.h>
+#include <linux/sem.h>
+#include <linux/shm.h>
 #endif
 
 #ifdef WIN32
@@ -60,10 +60,10 @@
 #endif
 
 #if defined(__GNU_LIBRARY__) && !defined(_SEM_SEMUN_UNDEFINED)
-/* union semun is defined by including <sys/sem.h> */
+/* union semun is defined by including <linux/sem.h> */
 #else
 /* according to X/OPEN we have to define it ourselves */
-union semun {
+union __deprecated__semun {
     int val;                    /* value for SETVAL */
     struct semid_ds *buf;       /* buffer for IPC_STAT, IPC_SET */
     unsigned short int *array;  /* array for GETALL, SETALL */

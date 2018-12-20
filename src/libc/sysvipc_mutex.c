@@ -48,7 +48,7 @@
 
 #include <sys/types.h>
 #include <sys/ipc.h>
-#include <sys/sem.h>
+#include <linux/sem.h>
 #include <unistd.h>
 #include <sched.h>
 

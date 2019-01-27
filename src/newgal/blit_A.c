@@ -272,7 +272,7 @@ static void BlitRGBtoRGBPixelAlpha(GAL_BlitInfo *info)
         int srcskip = info->s_skip >> 2;
         Uint32 *dstp = (Uint32 *)info->d_pixels;
         int dstskip = info->d_skip >> 2;
-
+        Uint32 ckey = info->src->colorkey;
         while(height--) {
             DUFFS_LOOP4({
                 Uint32 dalpha;
@@ -286,7 +286,8 @@ static void BlitRGBtoRGBPixelAlpha(GAL_BlitInfo *info)
                    it correctly. Also special-case alpha=0 for speed?
                    Benchmark this! */
                 if (alpha == GAL_ALPHA_OPAQUE) {
-                    *dstp = s;
+                    if ( *srcp   != ckey )
+                        *dstp = s;
                 } else {
                     /*
                      * take out the middle component (green), and process

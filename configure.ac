@@ -73,8 +73,8 @@ AC_STRUCT_TM
 
 dnl Checks for library functions.
 AC_FUNC_ALLOCA
-AC_FUNC_MEMCMP
-AC_FUNC_MMAP
+AC_CHECK_FUNCS(memcmp)
+AC_CHECK_FUNCS(mmap)
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(time mktime localtime strdup strcasecmp strncasecmp strerror setlocale)
 AC_CHECK_FUNCS(posix_memalign memalign valloc)

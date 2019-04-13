@@ -2115,7 +2115,6 @@ if test "x$build_ttf_support" = "xyes"; then
     AC_DEFINE(_MGFONT_FT2, 1,
          [Define if support TrueType/OpenType fonts based on FreeType2])
 
-    with_ft2_includes=""
     AC_ARG_WITH(ft2_includes,
 [  --with-ft2-includes=DIR      where the FreeType2 includes are],
         with_ft2_includes=$withval)

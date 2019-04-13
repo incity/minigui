@@ -31,7 +31,7 @@ PKG_CONFIG_PATH=$OUTPUT/lib/pkgconfig \
 ./configure --host=arm-none-linux --target=arm-eabi  \
 --enable-tslibial  --enable-static --enable-shared \
 --prefix=$OUTPUT \
---with-ttfsupport=ft2 --with-ft2-includes=$ANDROID_BUILD_TOP/external/freetype/include \
+--with-ft2-includes=$ANDROID_BUILD_TOP/external/freetype/include \
 --disable-screensaver --enable-adv2dapi --disable-flatlf --disable-dblclk \
 --disable-cursor --disable-dummyial --disable-consoleial --disable-consoleps2 \
 --disable-consolems --disable-consolems3 --disable-textmode --disable-newtextedit \

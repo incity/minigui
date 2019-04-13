@@ -3216,7 +3216,7 @@ alExtra.(xwyan)
 	* src/gui/lf_flat.c
 	* src/gui/lf_skin.c
 
-08/24: ENHANCEMENT #1: Add a new method for FONTOPS: get_glyph_type to return
+08/24: ENHANCEMENT #1: Add a new method for FONTOPS: get_char_type to return
 the glyph type the devfont can give us.
 	* src/include/devfont.h
 	* src/font/*.c
@@ -4761,7 +4761,7 @@ create_skin_main_window_ex:
 	* ext/skin/skin.c
 
 05/16. ENHANCEMENT #8: Support for UTF-16LE and UTF-16BE charsets/encodings.
-	* Change the definition of UChar32 to 'int'.
+	* Change the definition of Uchar32 to 'int'.
 		* include/gdi.h
 
 05/16. ENHANCEMENT #11: Support for FreeType2.

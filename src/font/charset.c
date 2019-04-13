@@ -1,39 +1,39 @@
 /*
- *   This file is part of MiniGUI, a mature cross-platform windowing 
+ *   This file is part of MiniGUI, a mature cross-platform windowing
  *   and Graphics User Interface (GUI) support system for embedded systems
  *   and smart IoT devices.
- * 
+ *
  *   Copyright (C) 2002~2018, Beijing FMSoft Technologies Co., Ltd.
  *   Copyright (C) 1998~2002, WEI Yongming
- * 
+ *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- * 
+ *
  *   This program is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU General Public License for more details.
- * 
+ *
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  *   Or,
- * 
+ *
  *   As this program is a library, any link to this program must follow
  *   GNU General Public License version 3 (GPLv3). If you cannot accept
  *   GPLv3, you need to be licensed from FMSoft.
- * 
+ *
  *   If you have got a commercial license of this program, please use it
  *   under the terms and conditions of the commercial license.
- * 
+ *
  *   For more information about the commercial license, please refer to
  *   <http://www.minigui.com/en/about/licensing-policy/>.
  */
 /*
 ** charset.c: The charset operation set.
-** 
+**
 ** Create date: 2000/06/13
 */
 
@@ -57,53 +57,55 @@ static int sb_len_first_char (const unsigned char* mstr, int len)
     return 0;
 }
 
-static Glyph32 sb_char_glyph_value (const unsigned char* pre_mchar,  int pre_len, 
+static Achar32 sb_get_char_value (const unsigned char* pre_mchar,  int pre_len,
                 const unsigned char* cur_mchar, int cur_len)
 {
-    return (int)(*cur_mchar);
+    return (Achar32)(*cur_mchar);
 }
 
-static unsigned int sb_glyph_type (Glyph32 glyph_value)
-{
-    unsigned int ch_type = MCHAR_TYPE_UNKNOWN;
+#define sb_char_type __mg_sb_char_type
 
-    switch (glyph_value) {
+unsigned int __mg_sb_char_type (Achar32 chv)
+{
+    unsigned int ch_type = ACHAR_BASIC_UNKNOWN;
+
+    switch (chv) {
         case '\0':
-            ch_type = MCHAR_TYPE_NUL;
+            ch_type = ACHAR_BASIC_NUL;
             break;
         case '\a':
-            ch_type = MCHAR_TYPE_BEL;
+            ch_type = ACHAR_BASIC_BEL;
             break;
         case '\b':
-            ch_type = MCHAR_TYPE_BS;
+            ch_type = ACHAR_BASIC_BS;
             break;
         case '\t':
-            ch_type = MCHAR_TYPE_HT;
+            ch_type = ACHAR_BASIC_HT;
             break;
         case '\n':
-            ch_type = MCHAR_TYPE_LF;
+            ch_type = ACHAR_BASIC_LF;
             break;
         case '\v':
-            ch_type = MCHAR_TYPE_VT;
+            ch_type = ACHAR_BASIC_VT;
             break;
         case '\f':
-            ch_type = MCHAR_TYPE_FF;
+            ch_type = ACHAR_BASIC_FF;
             break;
         case '\r':
-            ch_type = MCHAR_TYPE_CR;
+            ch_type = ACHAR_BASIC_CR;
             break;
         case ' ':
-            ch_type = MCHAR_TYPE_SPACE;
+            ch_type = ACHAR_BASIC_SPACE;
             break;
     }
 
-    if (ch_type == MCHAR_TYPE_UNKNOWN) {
-        if (glyph_value < '\a')
-            ch_type = MCHAR_TYPE_CTRL1;
-        else if (glyph_value < ' ')
-            ch_type = MCHAR_TYPE_CTRL2;
+    if (ch_type == ACHAR_BASIC_UNKNOWN) {
+        if (chv < '\a')
+            ch_type = ACHAR_BASIC_CTRL1;
+        else if (chv < ' ')
+            ch_type = ACHAR_BASIC_CTRL2;
         else
-            ch_type = MCHAR_TYPE_GENERIC;
+            ch_type = ACHAR_BASIC_GENERIC;
     }
 
     return ch_type;
@@ -171,7 +173,7 @@ static const unsigned char* sb_get_next_word (const unsigned char* mstr,
             word_info->len ++;
         }
     }
-            
+
     return mstr + word_info->len + word_info->nr_delimiters;
 }
 
@@ -179,9 +181,9 @@ static const unsigned char* sb_get_next_word (const unsigned char* mstr,
 static int ascii_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -195,15 +197,15 @@ static int ascii_is_this_charset (const unsigned char* charset)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static UChar32 ascii_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 ascii_conv_to_uc32 (Achar32 chv)
 {
-    if (glyph_value < 128)
-        return glyph_value;
+    if (chv < 128)
+        return chv;
     else
         return '?';
 }
 
-static int ascii_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int ascii_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     if (wc < 128) {
         *mchar = (unsigned char) wc;
@@ -220,9 +222,9 @@ static CHARSETOPS CharsetOps_ascii = {
     FONT_CHARSET_US_ASCII,
     0,
     sb_len_first_char,
-    sb_char_glyph_value,
+    sb_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     sb_nr_chars_in_str,
     ascii_is_this_charset,
     sb_len_first_substr,
@@ -240,10 +242,10 @@ static CHARSETOPS CharsetOps_ascii = {
 static int iso8859_1_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
     char* sub_enc;
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -261,12 +263,12 @@ static int iso8859_1_is_this_charset (const unsigned char* charset)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static UChar32 iso8859_1_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 iso8859_1_conv_to_uc32 (Achar32 chv)
 {
-    return glyph_value;
+    return chv;
 }
 
-static int iso8859_1_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int iso8859_1_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     if (wc < 256) {
         *mchar = (unsigned char) wc;
@@ -283,9 +285,9 @@ static CHARSETOPS CharsetOps_iso8859_1 = {
     FONT_CHARSET_ISO8859_1,
     0,
     sb_len_first_char,
-    sb_char_glyph_value,
+    sb_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     sb_nr_chars_in_str,
     iso8859_1_is_this_charset,
     sb_len_first_substr,
@@ -305,9 +307,9 @@ static CHARSETOPS CharsetOps_iso8859_1 = {
 static int iso8859_2_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -324,7 +326,7 @@ static int iso8859_2_is_this_charset (const unsigned char* charset)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static unsigned short iso8859_2_unicode_map [] =
+static const unsigned short iso8859_2_unicode_map [] =
 {
     0x0104, 0x02D8,
     0x0141, 0x00A4, 0x013D,
@@ -360,15 +362,15 @@ static unsigned short iso8859_2_unicode_map [] =
     0x00FD, 0x0163, 0x02D9
 };
 
-static UChar32 iso8859_2_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 iso8859_2_conv_to_uc32 (Achar32 chv)
 {
-    if (glyph_value < 0xA1)
-        return glyph_value;
+    if (chv < 0xA1)
+        return chv;
     else
-        return (UChar32) iso8859_2_unicode_map [glyph_value - 0xA1];
+        return (Uchar32) iso8859_2_unicode_map [chv - 0xA1];
 }
 
-static int iso8859_2_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int iso8859_2_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     int i;
 
@@ -378,7 +380,7 @@ static int iso8859_2_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
     }
 
     for (i = 0; i < TABLESIZE (iso8859_2_unicode_map); i++) {
-        if (((UChar32)iso8859_2_unicode_map [i]) == wc) {
+        if (((Uchar32)iso8859_2_unicode_map [i]) == wc) {
             *mchar = 0xA1 + i;
             return 1;
         }
@@ -394,9 +396,9 @@ static CHARSETOPS CharsetOps_iso8859_2 = {
     FONT_CHARSET_ISO8859_2,
     0,
     sb_len_first_char,
-    sb_char_glyph_value,
+    sb_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     sb_nr_chars_in_str,
     iso8859_2_is_this_charset,
     sb_len_first_substr,
@@ -418,9 +420,9 @@ static CHARSETOPS CharsetOps_iso8859_2 = {
 static int iso8859_3_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -437,7 +439,7 @@ static int iso8859_3_is_this_charset (const unsigned char* charset)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static unsigned short iso8859_3_unicode_map [] =
+static const unsigned short iso8859_3_unicode_map [] =
 {
     0x0126, 0x02D8, 0x00A3,
     0x00A4, 0x00A5, 0x0124,
@@ -473,15 +475,15 @@ static unsigned short iso8859_3_unicode_map [] =
     0x015D, 0x02D9
 };
 
-static UChar32 iso8859_3_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 iso8859_3_conv_to_uc32 (Achar32 chv)
 {
-    if (glyph_value < 0xA1)
-        return glyph_value;
+    if (chv < 0xA1)
+        return chv;
     else
-        return (UChar32) iso8859_3_unicode_map [glyph_value - 0xA1];
+        return (Uchar32) iso8859_3_unicode_map [chv - 0xA1];
 }
 
-static int iso8859_3_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int iso8859_3_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     int i;
 
@@ -491,7 +493,7 @@ static int iso8859_3_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
     }
 
     for (i = 0; i < TABLESIZE (iso8859_3_unicode_map); i++) {
-        if (((UChar32)iso8859_3_unicode_map [i]) == wc) {
+        if (((Uchar32)iso8859_3_unicode_map [i]) == wc) {
             *mchar = 0xA1 + i;
             return 1;
         }
@@ -506,9 +508,9 @@ static CHARSETOPS CharsetOps_iso8859_3 = {
     FONT_CHARSET_ISO8859_3,
     0,
     sb_len_first_char,
-    sb_char_glyph_value,
+    sb_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     sb_nr_chars_in_str,
     iso8859_3_is_this_charset,
     sb_len_first_substr,
@@ -530,9 +532,9 @@ static CHARSETOPS CharsetOps_iso8859_3 = {
 static int iso8859_4_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -549,7 +551,7 @@ static int iso8859_4_is_this_charset (const unsigned char* charset)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static unsigned short iso8859_4_unicode_map [] =
+static const unsigned short iso8859_4_unicode_map [] =
 {
     0x0104, 0x0138, 0x0156,
     0x00A4, 0x0128, 0x013B,
@@ -585,16 +587,15 @@ static unsigned short iso8859_4_unicode_map [] =
     0x016B, 0x02D9
 };
 
-static UChar32 iso8859_4_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 iso8859_4_conv_to_uc32 (Achar32 chv)
 {
-    if (glyph_value < 0xA1)
-        return glyph_value;
+    if (chv < 0xA1)
+        return chv;
     else
-        return (UChar32) iso8859_4_unicode_map [glyph_value - 0xA1];
-   
+        return (Uchar32) iso8859_4_unicode_map [chv - 0xA1];
 }
 
-static int iso8859_4_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int iso8859_4_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     int i;
 
@@ -604,7 +605,7 @@ static int iso8859_4_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
     }
 
     for (i = 0; i < TABLESIZE (iso8859_4_unicode_map); i++) {
-        if (((UChar32)iso8859_4_unicode_map [i]) == wc) {
+        if (((Uchar32)iso8859_4_unicode_map [i]) == wc) {
             *mchar = 0xA1 + i;
             return 1;
         }
@@ -620,9 +621,9 @@ static CHARSETOPS CharsetOps_iso8859_4 = {
     FONT_CHARSET_ISO8859_4,
     0,
     sb_len_first_char,
-    sb_char_glyph_value,
+    sb_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     sb_nr_chars_in_str,
     iso8859_4_is_this_charset,
     sb_len_first_substr,
@@ -644,9 +645,9 @@ static CHARSETOPS CharsetOps_iso8859_4 = {
 static int iso8859_5_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -663,24 +664,24 @@ static int iso8859_5_is_this_charset (const unsigned char* charset)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static UChar32 iso8859_5_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 iso8859_5_conv_to_uc32 (Achar32 chv)
 {
-    if (glyph_value < 0xA1)
-        return glyph_value;
-   
-    if (glyph_value == 0xAD)
+    if (chv < 0xA1)
+        return chv;
+
+    if (chv == 0xAD)
         return 0x00AD;  /* SOFT HYPHEN */
 
-    if (glyph_value == 0xF0)
+    if (chv == 0xF0)
         return 0x2116;  /* NUMERO SIGN */
 
-    if (glyph_value == 0xFD)
+    if (chv == 0xFD)
         return 0x00A7;  /* SECTION SIGN */
 
-    return glyph_value + (0x0401 - 0xA1);
+    return chv + (0x0401 - 0xA1);
 }
 
-static int iso8859_5_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int iso8859_5_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     if (wc < 0xA1) {
         *mchar = (unsigned char) wc;
@@ -714,9 +715,9 @@ static CHARSETOPS CharsetOps_iso8859_5 = {
     FONT_CHARSET_ISO8859_5,
     0,
     sb_len_first_char,
-    sb_char_glyph_value,
+    sb_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     sb_nr_chars_in_str,
     iso8859_5_is_this_charset,
     sb_len_first_substr,
@@ -732,31 +733,38 @@ static CHARSETOPS CharsetOps_iso8859_5 = {
 
 #endif /* _CYRILLIC */
 
+#if defined (_MGCHARSET_HEBREW) || defined (_MGCHARSET_ARABIC)
+#include "legacy-bidi-tables.inc"
+#endif
+
 #if defined (_MGCHARSET_HEBREW) || defined (_MGCHARSET_ARABIC) || defined (_MGCHARSET_UNICODE)
 
 #include "bidi.h"
 
-static BOOL get_mirror_glyph (const BIDICHAR_MIRROR_MAP* map, int n, Glyph32 glyph, Glyph32* mirrored)
+#define get_mirror_char __mg_get_mirror_char
+
+BOOL __mg_get_mirror_char (const BIDICHAR_MIRROR_MAP* map, int n,
+        Achar32 chv, Achar32* mirrored)
 {
     int pos, step;
     BOOL found = FALSE;
-    BOOL is_mbc;
+    Achar32 mbc_mask;
 
     pos = step = (n / 2) + 1;
 
-    is_mbc = IS_MBC_GLYPH(glyph);
-    glyph = REAL_GLYPH(glyph);
+    mbc_mask = chv & ACHAR_MBC_FLAG;
+    chv = REAL_ACHAR(chv);
 
     while (step > 1) {
-        Glyph32 cmp_glyph = map[pos].glyph;
+        Achar32 cmp_char = map[pos].chv;
         step = (step + 1) / 2;
 
-        if (cmp_glyph < glyph) {
+        if (cmp_char < chv) {
             pos += step;
             if (pos > n - 1)
                 pos = n - 1;
         }
-        else if (cmp_glyph > glyph) {
+        else if (cmp_char > chv) {
             pos -= step;
             if (pos < 0)
                 pos = 0;
@@ -765,13 +773,11 @@ static BOOL get_mirror_glyph (const BIDICHAR_MIRROR_MAP* map, int n, Glyph32 gly
             break;
     }
 
-    found = map[pos].glyph == glyph;
+    found = map[pos].chv == chv;
 
     if (mirrored){
-        *mirrored = found ? map[pos].mirrored : glyph;
-        /* use the same mbc font for mirror char. */
-        if(is_mbc)
-            *mirrored = SET_MBC_GLYPH(*mirrored);
+        *mirrored = found ? map[pos].mirrored : chv;
+        *mirrored |= mbc_mask;
     }
 
     return found;
@@ -790,9 +796,9 @@ static BOOL get_mirror_glyph (const BIDICHAR_MIRROR_MAP* map, int n, Glyph32 gly
 static int iso8859_7_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -809,7 +815,7 @@ static int iso8859_7_is_this_charset (const unsigned char* charset)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static unsigned short iso8859_7_unicode_map [] =
+static const unsigned short iso8859_7_unicode_map [] =
 {
     0x2018, 0x2019, 0x00A3,
     0x00A4, 0x00A5, 0x00A6,
@@ -823,20 +829,20 @@ static unsigned short iso8859_7_unicode_map [] =
     0x038C, 0x00BD
 };
 
-static UChar32 iso8859_7_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 iso8859_7_conv_to_uc32 (Achar32 chv)
 {
-    if (glyph_value >= 0xBE && glyph_value <= 0xFE) {
-        return glyph_value - 0xBE + 0x038E;
+    if (chv >= 0xBE && chv <= 0xFE) {
+        return chv - 0xBE + 0x038E;
     }
-    else if (glyph_value >= 0xA1 && glyph_value <= 0xBD) {
-        return (UChar32)iso8859_7_unicode_map [glyph_value - 0xA1];
+    else if (chv >= 0xA1 && chv <= 0xBD) {
+        return (Uchar32)iso8859_7_unicode_map [chv - 0xA1];
     }
     else {
-        return glyph_value;
+        return chv;
     }
 }
 
-static int iso8859_7_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int iso8859_7_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     int i;
 
@@ -851,7 +857,7 @@ static int iso8859_7_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
     }
 
     for (i = 0; i < TABLESIZE (iso8859_7_unicode_map); i++) {
-        if (((UChar32)iso8859_7_unicode_map [i]) == wc) {
+        if (((Uchar32)iso8859_7_unicode_map [i]) == wc) {
             *mchar = 0xA1 + i;
             return 1;
         }
@@ -867,9 +873,9 @@ static CHARSETOPS CharsetOps_iso8859_7 = {
     FONT_CHARSET_ISO8859_7,
     0,
     sb_len_first_char,
-    sb_char_glyph_value,
+    sb_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     sb_nr_chars_in_str,
     iso8859_7_is_this_charset,
     sb_len_first_substr,
@@ -891,9 +897,9 @@ static CHARSETOPS CharsetOps_iso8859_7 = {
 static int iso8859_8_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -944,113 +950,120 @@ static const unsigned char* iso8859_8_get_next_word (const unsigned char* mstr,
                 word_info->len++;
         }
     }
-            
+
     return mstr + word_info->len + word_info->nr_delimiters;
 
     //return sb_get_next_word(mstr, mstrlen, word_info);
 }
 
-static Uint32 __mg_iso8859_8_type[] = {
-    /*0x00~0x0f*/ 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_SS,  BIDI_TYPE_BS,  BIDI_TYPE_SS, 
+static BidiType __mg_iso8859_8_bidi_char_type_map[] = {
+#if 0
+    /*0x00~0x0f*/
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_SS,  BIDI_TYPE_BS,  BIDI_TYPE_SS,
     BIDI_TYPE_WS,  BIDI_TYPE_BS,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
 
-    /*0x10~0x1f*/  
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
+    /*0x10~0x1f*/
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
     BIDI_TYPE_BS,  BIDI_TYPE_BS,  BIDI_TYPE_BS,  BIDI_TYPE_SS,
 
-    /*0x20~0x2f*/  
-    BIDI_TYPE_WS,  BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ET, 
-    BIDI_TYPE_ET,  BIDI_TYPE_ET,  BIDI_TYPE_ON,  BIDI_TYPE_ON, 
-    BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ES, 
+    /*0x20~0x2f*/
+    BIDI_TYPE_WS,  BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ET,
+    BIDI_TYPE_ET,  BIDI_TYPE_ET,  BIDI_TYPE_ON,  BIDI_TYPE_ON,
+    BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ES,
     BIDI_TYPE_CS,  BIDI_TYPE_ES,  BIDI_TYPE_CS,  BIDI_TYPE_CS,
 
-    /*0x30~0x3f*/  
-    BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_EN, 
-    BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_EN, 
-    BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_CS,  BIDI_TYPE_ON, 
+    /*0x30~0x3f*/
+    BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_EN,
+    BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_EN,
+    BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_CS,  BIDI_TYPE_ON,
     BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,
 
-    /*0x40~0x4f*/  
+    /*0x40~0x4f*/
     BIDI_TYPE_ON,  BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
 
-    /*0x50~0x6f*/  
+    /*0x50~0x6f*/
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
-    BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_ON, 
+    BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_ON,
     BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,
-    /*0x60~0x6f*/  
+
+    /*0x60~0x6f*/
     BIDI_TYPE_ON,  BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
 
-    /*0x70~0x7f*/  
+    /*0x70~0x7f*/
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
-    BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_ON, 
+    BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_ON,
     BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_BN,
+#endif
 
-    /*0x80~0x8f*/  
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-   
-    /*0x90~0x9f*/  
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
+    /*0x80~0x8f*/
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
 
-    /*0xa0~0xaf*/  
+    /*0x90~0x9f*/
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+
+    /*0xa0~0xaf*/
     BIDI_TYPE_CS,  BIDI_TYPE_BN,  BIDI_TYPE_ET,  BIDI_TYPE_ET,
-    BIDI_TYPE_ET,  BIDI_TYPE_ET,  BIDI_TYPE_ON,  BIDI_TYPE_ON, 
+    BIDI_TYPE_ET,  BIDI_TYPE_ET,  BIDI_TYPE_ON,  BIDI_TYPE_ON,
     BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,
     BIDI_TYPE_ON,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_ON,
 
-    /*0xb0~0xbf*/  
-    BIDI_TYPE_ET,  BIDI_TYPE_ET,  BIDI_TYPE_EN,  BIDI_TYPE_EN, 
-    BIDI_TYPE_ON,  BIDI_TYPE_LTR, BIDI_TYPE_ON,  BIDI_TYPE_ON, 
-    BIDI_TYPE_ON,  BIDI_TYPE_EN,  BIDI_TYPE_ON,  BIDI_TYPE_ON, 
+    /*0xb0~0xbf*/
+    BIDI_TYPE_ET,  BIDI_TYPE_ET,  BIDI_TYPE_EN,  BIDI_TYPE_EN,
+    BIDI_TYPE_ON,  BIDI_TYPE_LTR, BIDI_TYPE_ON,  BIDI_TYPE_ON,
+    BIDI_TYPE_ON,  BIDI_TYPE_EN,  BIDI_TYPE_ON,  BIDI_TYPE_ON,
     BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_BN,
 
-    /*0xc0~0xcf*/  
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
+    /*0xc0~0xcf*/
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
 
-    /*0xd0~0xdf*/  
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_ON, 
+    /*0xd0~0xdf*/
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_ON,
 
-    /*0xe0~0xef*/  
-    BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL, 
-    BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL, 
-    BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL, 
-    BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_ON, 
+    /*0xe0~0xef*/
+    BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,
+    BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,
+    BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,
+    BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_ON,
 
     /*0xf0~0xff*/
-    BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL, 
-    BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL, 
-    BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL, 
-    BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
+    BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,
+    BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,
+    BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,
+    BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_RTL,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
 };
 
-static unsigned int iso8859_8_bidi_glyph_type (Glyph32 glyph_value)
+static BidiType iso8859_8_bidi_char_type (Achar32 chv)
 {
-    return __mg_iso8859_8_type [REAL_GLYPH(glyph_value)];
+    chv = REAL_ACHAR(chv);
+    if (chv > 0x7F)
+        return (BidiType)__mg_iso8859_8_bidi_char_type_map[chv - 0x80];
+    else
+        return (BidiType)__mg_iso8859_1_bidi_char_type_map[chv];
 }
 
 static const BIDICHAR_MIRROR_MAP __mg_iso8859_8_mirror_table [] =
@@ -1067,20 +1080,22 @@ static const BIDICHAR_MIRROR_MAP __mg_iso8859_8_mirror_table [] =
 //  {0x00BB, 0x00AB}
 };
 
-static BOOL iso8859_8_bidi_mirror_glyph (Glyph32 glyph, Glyph32* mirrored)
+static BOOL iso8859_8_bidi_mirror_char (Achar32 chv, Achar32* mirrored)
 {
-    return get_mirror_glyph (__mg_iso8859_8_mirror_table,
-            TABLESIZE (__mg_iso8859_8_mirror_table), glyph, mirrored);
+    return get_mirror_char (__mg_iso8859_8_mirror_table,
+            TABLESIZE (__mg_iso8859_8_mirror_table), chv, mirrored);
 }
 
 #ifdef _MGCHARSET_UNICODE
-static UChar32 iso8859_8_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 iso8859_8_conv_to_uc32 (Achar32 chv)
 {
-    if (glyph_value >= 0xE0 && glyph_value <= 0xFA) {
-        return  glyph_value - 0xE0 + 0x05D0;
+    chv = REAL_ACHAR(chv);
+
+    if (chv >= 0xE0 && chv <= 0xFA) {
+        return  chv - 0xE0 + 0x05D0;
     }
     else {
-        switch (glyph_value) {
+        switch (chv) {
             case 0xAA:
                 return 0x00D7;
             case 0xBA:
@@ -1092,11 +1107,11 @@ static UChar32 iso8859_8_conv_to_uc32 (Glyph32 glyph_value)
             case 0xFE:
                 return 0x200F;
         }
-        return glyph_value;
+        return chv;
     }
 }
 
-static int iso8859_8_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int iso8859_8_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
 
     switch (wc) {
@@ -1130,20 +1145,20 @@ static int iso8859_8_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
 
 static CHARSETOPS CharsetOps_iso8859_8 = {
     256,
-    2,
+    2, // This is a trick for bidi reorder only implemented for MBC.
     FONT_CHARSET_ISO8859_8,
     0,
     sb_len_first_char,
-    sb_char_glyph_value,
+    sb_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     sb_nr_chars_in_str,
     iso8859_8_is_this_charset,
     sb_len_first_substr,
     iso8859_8_get_next_word,
     sb_pos_first_char,
-    iso8859_8_bidi_glyph_type,
-    iso8859_8_bidi_mirror_glyph,
+    iso8859_8_bidi_char_type,
+    iso8859_8_bidi_mirror_char,
 #ifdef _MGCHARSET_UNICODE
     iso8859_8_conv_to_uc32,
     iso8859_8_conv_from_uc32
@@ -1158,9 +1173,9 @@ static CHARSETOPS CharsetOps_iso8859_8 = {
 static int iso8859_9_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -1177,9 +1192,9 @@ static int iso8859_9_is_this_charset (const unsigned char* charset)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static UChar32 iso8859_9_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 iso8859_9_conv_to_uc32 (Achar32 chv)
 {
-    switch (glyph_value) {
+    switch (chv) {
         case 0xD0:
                 return 0x011E;
         case 0xDD:
@@ -1194,10 +1209,10 @@ static UChar32 iso8859_9_conv_to_uc32 (Glyph32 glyph_value)
                 return 0x015F;
     }
 
-    return glyph_value;
+    return chv;
 }
 
-static int iso8859_9_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int iso8859_9_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     switch (wc) {
         case 0x011E:
@@ -1235,9 +1250,9 @@ static CHARSETOPS CharsetOps_iso8859_9 = {
     FONT_CHARSET_ISO8859_9,
     0,
     sb_len_first_char,
-    sb_char_glyph_value,
+    sb_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     sb_nr_chars_in_str,
     iso8859_9_is_this_charset,
     sb_len_first_substr,
@@ -1259,9 +1274,9 @@ static CHARSETOPS CharsetOps_iso8859_9 = {
 static int iso8859_10_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -1278,7 +1293,7 @@ static int iso8859_10_is_this_charset (const unsigned char* charset)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static unsigned short iso8859_10_unicode_map [] =
+static const unsigned short iso8859_10_unicode_map [] =
 {
     0x0104, 0x0112, 0x0122,
     0x012A, 0x0128, 0x0136,
@@ -1314,15 +1329,15 @@ static unsigned short iso8859_10_unicode_map [] =
     0x00FE, 0x0138
 };
 
-static UChar32 iso8859_10_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 iso8859_10_conv_to_uc32 (Achar32 chv)
 {
-    if (glyph_value < 0xA1)
-        return glyph_value;
+    if (chv < 0xA1)
+        return chv;
     else
-        return (UChar32)iso8859_10_unicode_map [glyph_value - 0xA1];
+        return (Uchar32)iso8859_10_unicode_map [chv - 0xA1];
 }
 
-static int iso8859_10_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int iso8859_10_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     int i;
 
@@ -1332,7 +1347,7 @@ static int iso8859_10_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
     }
 
     for (i = 0; i < TABLESIZE (iso8859_10_unicode_map); i++) {
-        if (((UChar32)iso8859_10_unicode_map [i]) == wc) {
+        if (((Uchar32)iso8859_10_unicode_map [i]) == wc) {
             *mchar = 0xA1 + i;
             return 1;
         }
@@ -1348,9 +1363,9 @@ static CHARSETOPS CharsetOps_iso8859_10 = {
     FONT_CHARSET_ISO8859_10,
     0,
     sb_len_first_char,
-    sb_char_glyph_value,
+    sb_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     sb_nr_chars_in_str,
     iso8859_10_is_this_charset,
     sb_len_first_substr,
@@ -1372,9 +1387,9 @@ static CHARSETOPS CharsetOps_iso8859_10 = {
 static int iso8859_11_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -1391,7 +1406,7 @@ static int iso8859_11_is_this_charset (const unsigned char* charset)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static unsigned short iso8859_11_unicode_map [] =
+static const unsigned short iso8859_11_unicode_map [] =
 {
     0x0E01, 0x0E02, 0x0E03,
     0x0E04, 0x0E05, 0x0E06,
@@ -1427,15 +1442,15 @@ static unsigned short iso8859_11_unicode_map [] =
     0x00FE, 0x00FF
 };
 
-static UChar32 iso8859_11_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 iso8859_11_conv_to_uc32 (Achar32 chv)
 {
-    if (glyph_value < 0xA1)
-        return glyph_value;
+    if (chv < 0xA1)
+        return chv;
     else
-        return (UChar32) iso8859_11_unicode_map [glyph_value - 0xA1];
+        return (Uchar32) iso8859_11_unicode_map [chv - 0xA1];
 }
 
-static int iso8859_11_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int iso8859_11_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     int i;
 
@@ -1445,7 +1460,7 @@ static int iso8859_11_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
     }
 
     for (i = 0; i < TABLESIZE (iso8859_11_unicode_map); i++) {
-        if (((UChar32)iso8859_11_unicode_map [i]) == wc) {
+        if (((Uchar32)iso8859_11_unicode_map [i]) == wc) {
             *mchar = 0xA1 + i;
             return 1;
         }
@@ -1460,9 +1475,9 @@ static CHARSETOPS CharsetOps_iso8859_11 = {
     FONT_CHARSET_ISO8859_11,
     0,
     sb_len_first_char,
-    sb_char_glyph_value,
+    sb_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     sb_nr_chars_in_str,
     iso8859_11_is_this_charset,
     sb_len_first_substr,
@@ -1484,9 +1499,9 @@ static CHARSETOPS CharsetOps_iso8859_11 = {
 static int iso8859_13_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -1503,7 +1518,7 @@ static int iso8859_13_is_this_charset (const unsigned char* charset)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static unsigned short iso8859_13_unicode_map [] =
+static const unsigned short iso8859_13_unicode_map [] =
 {
     0x201D, 0x00A2, 0x00A3,
     0x00A4, 0x201E, 0x00A6,
@@ -1539,15 +1554,15 @@ static unsigned short iso8859_13_unicode_map [] =
     0x017E, 0x2019
 };
 
-static UChar32 iso8859_13_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 iso8859_13_conv_to_uc32 (Achar32 chv)
 {
-    if (glyph_value < 0xA1)
-        return glyph_value;
+    if (chv < 0xA1)
+        return chv;
     else
-        return (UChar32) iso8859_13_unicode_map [glyph_value - 0xA1];
+        return (Uchar32) iso8859_13_unicode_map [chv - 0xA1];
 }
 
-static int iso8859_13_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int iso8859_13_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     int i;
 
@@ -1557,7 +1572,7 @@ static int iso8859_13_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
     }
 
     for (i = 0; i < TABLESIZE (iso8859_13_unicode_map); i++) {
-        if (((UChar32)iso8859_13_unicode_map [i]) == wc) {
+        if (((Uchar32)iso8859_13_unicode_map [i]) == wc) {
             *mchar = 0xA1 + i;
             return 1;
         }
@@ -1572,9 +1587,9 @@ static CHARSETOPS CharsetOps_iso8859_13 = {
     FONT_CHARSET_ISO8859_13,
     0,
     sb_len_first_char,
-    sb_char_glyph_value,
+    sb_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     sb_nr_chars_in_str,
     iso8859_13_is_this_charset,
     sb_len_first_substr,
@@ -1596,9 +1611,9 @@ static CHARSETOPS CharsetOps_iso8859_13 = {
 static int iso8859_14_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -1615,7 +1630,7 @@ static int iso8859_14_is_this_charset (const unsigned char* charset)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static unsigned short iso8859_14_unicode_map [] =
+static const unsigned short iso8859_14_unicode_map [] =
 {
     0x1E02, 0x1E03, 0x00A3,
     0x010A, 0x010B, 0x1E0A,
@@ -1651,15 +1666,15 @@ static unsigned short iso8859_14_unicode_map [] =
     0x0177, 0x00FF
 };
 
-static UChar32 iso8859_14_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 iso8859_14_conv_to_uc32 (Achar32 chv)
 {
-    if (glyph_value < 0xA1)
-        return glyph_value;
+    if (chv < 0xA1)
+        return chv;
     else
-        return (UChar32) iso8859_14_unicode_map [glyph_value - 0xA1];
+        return (Uchar32) iso8859_14_unicode_map [chv - 0xA1];
 }
 
-static int iso8859_14_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int iso8859_14_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     int i;
 
@@ -1669,7 +1684,7 @@ static int iso8859_14_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
     }
 
     for (i = 0; i < TABLESIZE (iso8859_14_unicode_map); i++) {
-        if (((UChar32)iso8859_14_unicode_map [i]) == wc) {
+        if (((Uchar32)iso8859_14_unicode_map [i]) == wc) {
             *mchar = 0xA1 + i;
             return 1;
         }
@@ -1684,9 +1699,9 @@ static CHARSETOPS CharsetOps_iso8859_14 = {
     FONT_CHARSET_ISO8859_14,
     0,
     sb_len_first_char,
-    sb_char_glyph_value,
+    sb_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     sb_nr_chars_in_str,
     iso8859_14_is_this_charset,
     sb_len_first_substr,
@@ -1708,9 +1723,9 @@ static CHARSETOPS CharsetOps_iso8859_14 = {
 static int iso8859_15_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -1727,9 +1742,9 @@ static int iso8859_15_is_this_charset (const unsigned char* charset)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static UChar32 iso8859_15_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 iso8859_15_conv_to_uc32 (Achar32 chv)
 {
-    switch (glyph_value) {
+    switch (chv) {
         case 0xA4:
             return 0x20AC;  /* EURO SIGN */
         case 0xA6:
@@ -1747,11 +1762,11 @@ static UChar32 iso8859_15_conv_to_uc32 (Glyph32 glyph_value)
         case 0xBE:
             return 0x0178;  /* LATIN CAPITAL LETTER Y WITH DIAERESIS */
         default:
-            return glyph_value;
+            return chv;
     }
 }
 
-static int iso8859_15_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int iso8859_15_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     switch (wc) {
         case 0x20AC:  /* EURO SIGN */
@@ -1795,9 +1810,9 @@ static CHARSETOPS CharsetOps_iso8859_15 = {
     FONT_CHARSET_ISO8859_15,
     0,
     sb_len_first_char,
-    sb_char_glyph_value,
+    sb_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     sb_nr_chars_in_str,
     iso8859_15_is_this_charset,
     sb_len_first_substr,
@@ -1818,9 +1833,9 @@ static CHARSETOPS CharsetOps_iso8859_15 = {
 static int iso8859_16_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -1837,9 +1852,9 @@ static int iso8859_16_is_this_charset (const unsigned char* charset)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static UChar32 iso8859_16_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 iso8859_16_conv_to_uc32 (Achar32 chv)
 {
-    switch (glyph_value) {
+    switch (chv) {
         case 0xA1: return 0x0104;
         case 0xA2: return 0x0105;
         case 0xA3: return 0x0141;
@@ -1882,10 +1897,10 @@ static UChar32 iso8859_16_conv_to_uc32 (Glyph32 glyph_value)
         case 0xFE: return 0x021B;
     }
 
-    return glyph_value;
+    return chv;
 }
 
-static int iso8859_16_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int iso8859_16_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     switch (wc) {
         case 0x0104: *mchar = 0xA1; return 1;
@@ -1945,9 +1960,9 @@ static CHARSETOPS CharsetOps_iso8859_16 = {
     FONT_CHARSET_ISO8859_16,
     0,
     sb_len_first_char,
-    sb_char_glyph_value,
+    sb_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     sb_nr_chars_in_str,
     iso8859_16_is_this_charset,
     sb_len_first_substr,
@@ -1969,10 +1984,10 @@ static CHARSETOPS CharsetOps_iso8859_16 = {
         | defined(_MGCHARSET_SHIFTJIS) \
         | defined(_MGCHARSET_UNICODE)
 
-static unsigned int mb_glyph_type (Glyph32 glyph_value)
+static unsigned int mb_char_type (Achar32 chv)
 {
     /* TODO: get the subtype of the char */
-    return MCHAR_TYPE_GENERIC;
+    return ACHAR_BASIC_GENERIC;
 }
 
 static int db_nr_chars_in_str (const unsigned char* mstr, int mstrlen)
@@ -2023,7 +2038,7 @@ static int gb2312_0_len_first_char (const unsigned char* mstr, int len)
     return 0;
 }
 
-static Glyph32 gb2312_0_char_glyph_value (const unsigned char* pre_mchar, 
+static Achar32 gb2312_0_get_char_value (const unsigned char* pre_mchar,
                 int pre_len, const unsigned char* cur_mchar, int cur_len)
 {
     int area = cur_mchar [0] - 0xA1;
@@ -2040,9 +2055,9 @@ static Glyph32 gb2312_0_char_glyph_value (const unsigned char* pre_mchar,
 static int gb2312_0_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -2110,14 +2125,14 @@ static int gb2312_0_pos_first_char (const unsigned char* mstr, int mstrlen)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static UChar32 gb2312_0_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 gb2312_0_conv_to_uc32 (Achar32 chv)
 {
-    return (UChar32)__mg_gbunicode_map [glyph_value];
+    return (Uchar32)__mg_gbunicode_map [REAL_ACHAR(chv)];
 }
 
 const unsigned char* __mg_map_uc16_to_gb (unsigned short uc16);
 
-static int gb2312_0_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int gb2312_0_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     const unsigned char* got;
 
@@ -2142,9 +2157,9 @@ static CHARSETOPS CharsetOps_gb2312_0 = {
     FONT_CHARSET_GB2312_0,
     0,
     gb2312_0_len_first_char,
-    gb2312_0_char_glyph_value,
+    gb2312_0_get_char_value,
     NULL,
-    mb_glyph_type,
+    mb_char_type,
     db_nr_chars_in_str,
     gb2312_0_is_this_charset,
     gb2312_0_len_first_substr,
@@ -2183,7 +2198,7 @@ static int gbk_len_first_char (const unsigned char* mstr, int len)
     return 0;
 }
 
-static Glyph32 gbk_char_glyph_value (const unsigned char* pre_mchar,  int pre_len, 
+static Achar32 gbk_get_char_value (const unsigned char* pre_mchar,  int pre_len,
                 const unsigned char* cur_mchar, int cur_len)
 {
     if (cur_mchar [1] > 0x7F)
@@ -2195,9 +2210,9 @@ static Glyph32 gbk_char_glyph_value (const unsigned char* pre_mchar,  int pre_le
 static int gbk_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -2268,14 +2283,13 @@ static int gbk_pos_first_char (const unsigned char* mstr, int mstrlen)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static UChar32 gbk_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 gbk_conv_to_uc32 (Achar32 chv)
 {
-
-    return (UChar32)__mg_gbkunicode_map[glyph_value];
+    return (Uchar32)__mg_gbkunicode_map[REAL_ACHAR(chv)];
 }
 
 const unsigned char* __mg_map_uc16_to_gbk (unsigned short uc16);
-static int gbk_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int gbk_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     const unsigned char* got;
 
@@ -2300,9 +2314,9 @@ static CHARSETOPS CharsetOps_gbk = {
     FONT_CHARSET_GBK,
     0,
     gbk_len_first_char,
-    gbk_char_glyph_value,
+    gbk_get_char_value,
     NULL,
-    mb_glyph_type,
+    mb_char_type,
     db_nr_chars_in_str,
     gbk_is_this_charset,
     gbk_len_first_substr,
@@ -2349,7 +2363,7 @@ static int gb18030_0_len_first_char (const unsigned char* mstr, int len)
     return 0;
 }
 
-static Glyph32 gb18030_0_char_glyph_value (const unsigned char* pre_mchar,  
+static Achar32 gb18030_0_get_char_value (const unsigned char* pre_mchar,
                 int pre_len, const unsigned char* cur_mchar, int cur_len)
 {
     unsigned char ch1;
@@ -2364,17 +2378,17 @@ static Glyph32 gb18030_0_char_glyph_value (const unsigned char* pre_mchar,
 
     ch3 = cur_mchar [2];
     ch4 = cur_mchar [3];
-    return ((126 * 192) + 
-            ((ch1 - 0x81) * 12600 + (ch2 - 0x30) * 1260 + 
+    return ((126 * 192) +
+            ((ch1 - 0x81) * 12600 + (ch2 - 0x30) * 1260 +
              (ch3 - 0x81) * 10 + (ch4 - 0x30)));
 }
 
 static int gb18030_0_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -2412,7 +2426,7 @@ static int gb18030_0_len_first_substr (const unsigned char* mstr, int mstrlen)
             left -= 2;
         }
         else if (left >= 4) {
-            
+
             ch3 = mstr [i + 2];
             ch4 = mstr [i + 3];
             if (ch2 >= 0x30 && ch2 <= 0x39 && ch4 >= 0x30 && ch4 <= 0x39
@@ -2443,7 +2457,7 @@ static int gb18030_0_pos_first_char (const unsigned char* mstr, int mstrlen)
         if (ch1 == '\0') return -1;
 
         ch2 = mstr [i + 1];
-        if (ch1 >= 0x81 && ch1 <= 0xFE 
+        if (ch1 >= 0x81 && ch1 <= 0xFE
                 && ch2 >= 0x40 && ch2 <= 0xFE && ch2 != 0x7F)
             return i;
 
@@ -2513,34 +2527,36 @@ static const unsigned char* gb18030_0_get_next_word (const unsigned char* mstr,
 }
 
 #ifdef _MGCHARSET_UNICODE
-static UChar32 gb18030_0_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 gb18030_0_conv_to_uc32 (Achar32 chv)
 {
+    chv = REAL_ACHAR(chv);
+
     /* from 0x90308130 to 0xE3329A35 */
-    if (glyph_value > 63611) {
+    if (chv > 63611) {
         int m1, n1, m2, n2, m3, n3;
 
-        m1 = (glyph_value - 24192) / 12600;
-        n1 = (glyph_value - 24192) % 12600;
+        m1 = (chv - 24192) / 12600;
+        n1 = (chv - 24192) % 12600;
         m2 = n1 / 1260;
         n2 = n1 % 1260;
         m3 = n2 / 10;
         n3 = n2 % 10;
 
-        return ((m1 + 129 - 144) * 12600) + 
+        return ((m1 + 129 - 144) * 12600) +
                 (m2 * 1260) + (m3 * 10) + n3 + 65536;
     }
 
-    return (UChar32)__mg_gb18030_0_unicode_map [glyph_value];
+    return (Uchar32)__mg_gb18030_0_unicode_map [chv];
 }
 
 int __mg_map_ucs_to_gb18030 (int wc, unsigned char* mchar);
-static int gb18030_0_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int gb18030_0_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     if (wc > 0x10FFFF)
         return 0;
     else if (wc >= 0x10000 && wc <= 0x10FFFF) {
         /* from 0x10000 - 0x10FFFF */
-        UChar32 m1, n1, m2, n2, m3, n3;
+        Uchar32 m1, n1, m2, n2, m3, n3;
         m1 = (wc - 65536) / 12600;
         n1 = (wc - 65536) % 12600;
         m2 = n1 / 1260;
@@ -2566,9 +2582,9 @@ static CHARSETOPS CharsetOps_gb18030_0 = {
     FONT_CHARSET_GB18030_0,
     0,
     gb18030_0_len_first_char,
-    gb18030_0_char_glyph_value,
+    gb18030_0_get_char_value,
     NULL,
-    mb_glyph_type,
+    mb_char_type,
     gb18030_0_nr_chars_in_str,
     gb18030_0_is_this_charset,
     gb18030_0_len_first_substr,
@@ -2599,14 +2615,14 @@ static int big5_len_first_char (const unsigned char* mstr, int len)
         return 0;
 
     ch2 = mstr [1];
-    if (ch1 >= 0xA1 && ch1 <= 0xFE && 
+    if (ch1 >= 0xA1 && ch1 <= 0xFE &&
             ((ch2 >=0x40 && ch2 <= 0x7E) || (ch2 >= 0xA1 && ch2 <= 0xFE)))
         return 2;
 
     return 0;
 }
 
-static Glyph32 big5_char_glyph_value (const unsigned char* pre_mchar,  int pre_len,
+static Achar32 big5_get_char_value (const unsigned char* pre_mchar,  int pre_len,
                 const unsigned char* cur_mchar, int cur_len)
 {
     if (cur_mchar [1] & 0x80)
@@ -2618,9 +2634,9 @@ static Glyph32 big5_char_glyph_value (const unsigned char* pre_mchar,  int pre_l
 static int big5_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -2648,7 +2664,7 @@ static int big5_len_first_substr (const unsigned char* mstr, int mstrlen)
         if (ch1 == '\0') return sub_len;
 
         ch2 = mstr [i + 1];
-        if (ch1 >= 0xA1 && ch1 <= 0xFE && 
+        if (ch1 >= 0xA1 && ch1 <= 0xFE &&
                 ((ch2 >=0x40 && ch2 <= 0x7E) || (ch2 >= 0xA1 && ch2 <= 0xFE)))
             sub_len += 2;
         else
@@ -2675,7 +2691,7 @@ static int big5_pos_first_char (const unsigned char* mstr, int mstrlen)
         if (ch1 == '\0') return -1;
 
         ch2 = mstr [i + 1];
-        if (ch1 >= 0xA1 && ch1 <= 0xFE && 
+        if (ch1 >= 0xA1 && ch1 <= 0xFE &&
                 ((ch2 >=0x40 && ch2 <= 0x7E) || (ch2 >= 0xA1 && ch2 <= 0xFE)))
             return i;
 
@@ -2687,9 +2703,9 @@ static int big5_pos_first_char (const unsigned char* mstr, int mstrlen)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static UChar32 big5_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 big5_conv_to_uc32 (Achar32 chv)
 {
-    unsigned short ucs_code = __mg_big5_unicode_map [glyph_value];
+    unsigned short ucs_code = __mg_big5_unicode_map[REAL_ACHAR(chv)];
 
     if (ucs_code == 0)
         return '?';
@@ -2698,7 +2714,7 @@ static UChar32 big5_conv_to_uc32 (Glyph32 glyph_value)
 }
 
 const unsigned char* __mg_map_uc16_to_big5 (unsigned short uc16);
-static int big5_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int big5_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     const unsigned char* got;
 
@@ -2723,9 +2739,9 @@ static CHARSETOPS CharsetOps_big5 = {
     FONT_CHARSET_BIG5,
     0,
     big5_len_first_char,
-    big5_char_glyph_value,
+    big5_get_char_value,
     NULL,
-    mb_glyph_type,
+    mb_char_type,
     db_nr_chars_in_str,
     big5_is_this_charset,
     big5_len_first_substr,
@@ -2762,7 +2778,7 @@ static int ksc5601_0_len_first_char (const unsigned char* mstr, int len)
     return 0;
 }
 
-static Glyph32 ksc5601_0_char_glyph_value (const unsigned char* pre_mchar, 
+static Achar32 ksc5601_0_get_char_value (const unsigned char* pre_mchar,
                 int pre_len, const unsigned char* cur_mchar, int cur_len)
 {
 #if 1
@@ -2778,16 +2794,16 @@ static Glyph32 ksc5601_0_char_glyph_value (const unsigned char* pre_mchar,
 static int ksc5601_0_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
     }
     name [i] = '\0';
 
-    if ((strstr (name, "KSC5601") && strstr (name, "-0")) || 
+    if ((strstr (name, "KSC5601") && strstr (name, "-0")) ||
             (strstr (name, "EUC") && strstr (name, "KR")))
         return 0;
 
@@ -2846,9 +2862,9 @@ static int ksc5601_0_pos_first_char (const unsigned char* mstr, int mstrlen)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static UChar32 ksc5601_0_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 ksc5601_0_conv_to_uc32 (Achar32 chv)
 {
-    unsigned short ucs_code = __mg_ksc5601_0_unicode_map [glyph_value];
+    unsigned short ucs_code = __mg_ksc5601_0_unicode_map[REAL_ACHAR(chv)];
 
     if (ucs_code == 0)
         return '?';
@@ -2856,7 +2872,7 @@ static UChar32 ksc5601_0_conv_to_uc32 (Glyph32 glyph_value)
     return ucs_code;
 }
 
-static int ksc5601_0_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int ksc5601_0_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     /* TODO */
     return 0;
@@ -2869,9 +2885,9 @@ static CHARSETOPS CharsetOps_ksc5601_0 = {
     FONT_CHARSET_EUCKR,
     0,
     ksc5601_0_len_first_char,
-    ksc5601_0_char_glyph_value,
+    ksc5601_0_get_char_value,
     NULL,
-    mb_glyph_type,
+    mb_char_type,
     db_nr_chars_in_str,
     ksc5601_0_is_this_charset,
     ksc5601_0_len_first_substr,
@@ -2909,7 +2925,7 @@ static int jisx0201_0_len_first_char (const unsigned char* mstr, int len)
     return 0;
 }
 
-static Glyph32 jisx0201_0_char_glyph_value (const unsigned char* pre_mchar, 
+static Achar32 jisx0201_0_get_char_value (const unsigned char* pre_mchar,
                 int pre_len, const unsigned char* cur_mchar, int cur_len)
 {
     if (cur_mchar [0] == 0x8E)
@@ -2950,9 +2966,9 @@ static int jisx0201_0_nr_chars_in_str (const unsigned char* mstr, int mstrlen)
 static int jisx0201_0_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -2967,21 +2983,20 @@ static int jisx0201_0_is_this_charset (const unsigned char* charset)
 
 
 #ifdef _MGCHARSET_UNICODE
-static UChar32 jisx0201_0_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 jisx0201_0_conv_to_uc32 (Achar32 chv)
 {
-
-    if (glyph_value >= 0xA1 && glyph_value <= 0xDF)
-        return 0xFF61 + glyph_value - 0xA1;
-    else if (glyph_value == 0x5C)
+    if (chv >= 0xA1 && chv <= 0xDF)
+        return 0xFF61 + chv - 0xA1;
+    else if (chv == 0x5C)
         return 0x00A5;
-    else if (glyph_value == 0x80)
+    else if (chv == 0x80)
         return 0x005C;
 
-    return glyph_value;
+    return chv;
 
 }
 
-static int jisx0201_0_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int jisx0201_0_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     /* TODO */
     return 0;
@@ -2994,9 +3009,9 @@ static CHARSETOPS CharsetOps_jisx0201_0 = {
     FONT_CHARSET_JISX0201_0,
     0,
     jisx0201_0_len_first_char,
-    jisx0201_0_char_glyph_value,
+    jisx0201_0_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     jisx0201_0_nr_chars_in_str,
     jisx0201_0_is_this_charset,
     sb_len_first_substr,
@@ -3028,7 +3043,7 @@ static int jisx0208_0_len_first_char (const unsigned char* mstr, int len)
     return 0;
 }
 
-static Glyph32 jisx0208_0_char_glyph_value (const unsigned char* pre_mchar, 
+static Achar32 jisx0208_0_get_char_value (const unsigned char* pre_mchar,
                 int pre_len, const unsigned char* cur_mchar, int cur_len)
 {
 #if 1
@@ -3044,9 +3059,9 @@ static Glyph32 jisx0208_0_char_glyph_value (const unsigned char* pre_mchar,
 static int jisx0208_0_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -3112,11 +3127,11 @@ static int jisx0208_0_pos_first_char (const unsigned char* mstr, int mstrlen)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static UChar32 jisx0208_0_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 jisx0208_0_conv_to_uc32 (Achar32 chv)
 {
     unsigned short ucs_code;
 
-    ucs_code = __mg_jisx0208_0_unicode_map [glyph_value];
+    ucs_code = __mg_jisx0208_0_unicode_map[REAL_ACHAR(chv)];
 
     if (ucs_code == 0)
         return '?';
@@ -3124,7 +3139,7 @@ static UChar32 jisx0208_0_conv_to_uc32 (Glyph32 glyph_value)
     return ucs_code;
 }
 
-static int jisx0208_0_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int jisx0208_0_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     /* TODO */
     return 0;
@@ -3137,9 +3152,9 @@ static CHARSETOPS CharsetOps_jisx0208_0 = {
     FONT_CHARSET_JISX0208_0,
     0,
     jisx0208_0_len_first_char,
-    jisx0208_0_char_glyph_value,
+    jisx0208_0_get_char_value,
     NULL,
-    mb_glyph_type,
+    mb_char_type,
     db_nr_chars_in_str,
     jisx0208_0_is_this_charset,
     jisx0208_0_len_first_substr,
@@ -3162,9 +3177,9 @@ static CHARSETOPS CharsetOps_jisx0208_0 = {
 static int jisx0201_1_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -3179,19 +3194,19 @@ static int jisx0201_1_is_this_charset (const unsigned char* charset)
 
 
 #ifdef _MGCHARSET_UNICODE
-static UChar32 jisx0201_1_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 jisx0201_1_conv_to_uc32 (Achar32 chv)
 {
-    if (glyph_value >= 0xA1 && glyph_value <= 0xDF)
-        return 0xFF61 + glyph_value - 0xA1;
-    else if (glyph_value == 0x5C)
+    if (chv >= 0xA1 && chv <= 0xDF)
+        return 0xFF61 + chv - 0xA1;
+    else if (chv == 0x5C)
         return 0x00A5;
-    else if (glyph_value == 0x80)
+    else if (chv == 0x80)
         return 0x005C;
 
-    return glyph_value;
+    return chv;
 }
 
-static int jisx0201_1_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int jisx0201_1_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     if (wc < 0xA1) {
         *mchar = (unsigned char)wc;
@@ -3222,9 +3237,9 @@ static CHARSETOPS CharsetOps_jisx0201_1 = {
     FONT_CHARSET_JISX0201_1,
     0,
     sb_len_first_char,
-    sb_char_glyph_value,
+    sb_get_char_value,
     NULL,
-    sb_glyph_type,
+    sb_char_type,
     sb_nr_chars_in_str,
     jisx0201_1_is_this_charset,
     sb_len_first_substr,
@@ -3250,14 +3265,14 @@ static int jisx0208_1_len_first_char (const unsigned char* mstr, int len)
         return 0;
 
     ch2 = mstr [1];
-    if (((ch1 >= 0x81 && ch1 <= 0x9F) || (ch1 >= 0xE0 && ch1 <= 0xEF)) && 
+    if (((ch1 >= 0x81 && ch1 <= 0x9F) || (ch1 >= 0xE0 && ch1 <= 0xEF)) &&
             ((ch2 >= 0x40 && ch2 <= 0x7E) || (ch2 >= 0x80 && ch2 <= 0xFC)))
         return 2;
 
     return 0;
 }
 
-static Glyph32 jisx0208_1_char_glyph_value (const unsigned char* pre_mchar, 
+static Achar32 jisx0208_1_get_char_value (const unsigned char* pre_mchar,
                 int pre_len, const unsigned char* cur_mchar, int cur_len)
 {
     unsigned char ch1 = cur_mchar [0];
@@ -3298,9 +3313,9 @@ static Glyph32 jisx0208_1_char_glyph_value (const unsigned char* pre_mchar,
 static int jisx0208_1_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -3329,7 +3344,7 @@ static int jisx0208_1_len_first_substr (const unsigned char* mstr, int mstrlen)
         if (ch1 == '\0') return sub_len;
 
         ch2 = mstr [i + 1];
-        if (((ch1 >= 0x81 && ch1 <= 0x9F) || (ch1 >= 0xE0 && ch1 <= 0xEF)) && 
+        if (((ch1 >= 0x81 && ch1 <= 0x9F) || (ch1 >= 0xE0 && ch1 <= 0xEF)) &&
                 ((ch2 >= 0x40 && ch2 <= 0x7E) || (ch2 >= 0x80 && ch2 <= 0xFC)))
             sub_len += 2;
         else
@@ -3356,7 +3371,7 @@ static int jisx0208_1_pos_first_char (const unsigned char* mstr, int mstrlen)
         if (ch1 == '\0') return -1;
 
         ch2 = mstr [i + 1];
-        if (((ch1 >= 0x81 && ch1 <= 0x9F) || (ch1 >= 0xE0 && ch1 <= 0xEF)) && 
+        if (((ch1 >= 0x81 && ch1 <= 0x9F) || (ch1 >= 0xE0 && ch1 <= 0xEF)) &&
                 ((ch2 >= 0x40 && ch2 <= 0x7E) || (ch2 >= 0x80 && ch2 <= 0xFC)))
             return i;
 
@@ -3368,11 +3383,11 @@ static int jisx0208_1_pos_first_char (const unsigned char* mstr, int mstrlen)
 }
 
 #ifdef _MGCHARSET_UNICODE
-static UChar32 jisx0208_1_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 jisx0208_1_conv_to_uc32 (Achar32 chv)
 {
     unsigned short ucs_code;
 
-    ucs_code  = __mg_jisx0208_1_unicode_map [glyph_value];
+    ucs_code  = __mg_jisx0208_1_unicode_map[REAL_ACHAR(chv)];
 
     if (ucs_code == 0)
         return '?';
@@ -3380,7 +3395,7 @@ static UChar32 jisx0208_1_conv_to_uc32 (Glyph32 glyph_value)
     return ucs_code;
 }
 
-static int jisx0208_1_conv_from_uc32 (UChar32 wc, unsigned char *mchar)
+static int jisx0208_1_conv_from_uc32 (Uchar32 wc, unsigned char *mchar)
 {
     /* TODO */
     return 0;
@@ -3393,9 +3408,9 @@ static CHARSETOPS CharsetOps_jisx0208_1 = {
     FONT_CHARSET_JISX0208_1,
     0,
     jisx0208_1_len_first_char,
-    jisx0208_1_char_glyph_value,
+    jisx0208_1_get_char_value,
     NULL,
-    mb_glyph_type,
+    mb_char_type,
     db_nr_chars_in_str,
     jisx0208_1_is_this_charset,
     jisx0208_1_len_first_substr,
@@ -3413,790 +3428,10 @@ static CHARSETOPS CharsetOps_jisx0208_1 = {
 #endif /* _SHIFTJIS */
 
 #ifdef _MGCHARSET_UNICODE
-
-/************************* UTF-8 Specific Operations ************************/
-static int utf8_len_first_char (const unsigned char* mstr, int len)
-{
-    int t, c = *((unsigned char *)(mstr++));
-
-    if (c & 0x80) {
-        int n = 1, ch_len = 0;
-        while (c & (0x80 >> n))
-            n++;
-
-        if (n > len)
-            return 0;
-
-        ch_len = n;
-        while (--n > 0) {
-            t = *((unsigned char *)(mstr++));
-
-            if ((!(t & 0x80)) || (t & 0x40))
-                return 0;
-        }
-
-        return ch_len;
-    }
-
-    /* for ascii character */
-    return 1;
-}
-
-static Glyph32 utf8_char_glyph_value (const unsigned char* pre_mchar,  int pre_len,
-                const unsigned char* cur_mchar, int cur_len)
-{
-    UChar32 wc = *((unsigned char *)(cur_mchar++));
-    int n, t;
-
-    if (wc & 0x80) {
-        n = 1;
-        while (wc & (0x80 >> n))
-            n++;
-
-        wc &= (1 << (8-n)) - 1;
-        while (--n > 0) {
-            t = *((unsigned char *)(cur_mchar++));
-
-            wc = (wc << 6) | (t & 0x3F);
-        }
-    }
-
-    return wc;
-}
-
-#include "gunicode.h"
-#include "gunichartables.h"
-
-#define TTYPE_PART1(Page, Char) \
-      ((type_table_part1[Page] >= G_UNICODE_MAX_TABLE_INDEX) \
-          ? (type_table_part1[Page] - G_UNICODE_MAX_TABLE_INDEX) \
-          : (type_data[type_table_part1[Page]][Char]))
-
-
-#define UNICODE_TYPE(Char) \
-      (((Char) <= G_UNICODE_LAST_CHAR_PART1) \
-          ? TTYPE_PART1 ((Char) >> 8, (Char) & 0xff) \
-          : G_UNICODE_UNASSIGNED)
-
-#include "unicode-bidi-tables.h"
-
-static unsigned int unicode_bidi_glyph_type (Glyph32 glyph_value)
-{
-    Glyph32 glyph_first = 0;
-    Glyph32 glyph_last = (Glyph32)TABLESIZE (__mg_unicode_bidi_char_type_map);
-    Glyph32 glyph_mid;
-
-    while (glyph_last >= glyph_first) {
-        glyph_mid = (glyph_first + glyph_last)/2;
-
-        if ((__mg_unicode_bidi_char_type_map[glyph_mid].glyph <= glyph_value)
-                && ((__mg_unicode_bidi_char_type_map[glyph_mid].glyph + __mg_unicode_bidi_char_type_map[glyph_mid].count) > glyph_value)) {
-            return __mg_unicode_bidi_char_type_map[glyph_mid].type;
-        }
-
-        if (glyph_value >= (__mg_unicode_bidi_char_type_map[glyph_mid].glyph + __mg_unicode_bidi_char_type_map[glyph_mid].count)) {
-            glyph_first = glyph_mid + 1;
-        }
-        else {
-            if (glyph_value < __mg_unicode_bidi_char_type_map[glyph_mid].glyph)
-                glyph_last = glyph_mid - 1;
-            else
-                glyph_last = glyph_mid;
-        }
-    }
-
-    return BIDI_TYPE_LTR;
-}
-
-static BOOL unicode_bidi_mirror_glyph (Glyph32 glyph, Glyph32* mirrored)
-{
-    return get_mirror_glyph (__mg_unicode_mirror_table,
-            TABLESIZE (__mg_unicode_mirror_table), glyph, mirrored);
-}
-
-static unsigned int utf8_glyph_type (Glyph32 glyph_value)
-{
-    if (glyph_value < 0x80) {
-        return sb_glyph_type (glyph_value);
-    }
-    else {
-        return UNICODE_TYPE (glyph_value);
-    }
-}
-
-static int utf8_nr_chars_in_str (const unsigned char* mstr, int mstrlen)
-{
-    int charlen;
-    int n = 0;
-    int left = mstrlen;
-
-    while (left >= 0) {
-        charlen = utf8_len_first_char (mstr, left);
-        if (charlen > 0)
-            n ++;
-
-        left -= charlen;
-        mstr += charlen;
-    }
-
-    return n;
-}
-
-static int utf8_is_this_charset (const unsigned char* charset)
-{
-    int i;
-    char name [LEN_FONT_NAME + 1];
-
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
-        if (charset [i] == '\0')
-            break;
-        name [i] = toupper (charset [i]);
-    }
-    name [i] = '\0';
-
-    if (strstr (name, "UTF") && strstr (name, "8"))
-        return 0;
-
-    return 1;
-}
-
-static int utf8_len_first_substr (const unsigned char* mstr, int mstrlen)
-{
-    int ch_len;
-    int sub_len = 0;
-
-    while (mstrlen > 0) {
-        ch_len = utf8_len_first_char (mstr, mstrlen);
-
-        if (ch_len == 0)
-            break;
-
-        sub_len += ch_len;
-        mstrlen -= ch_len;
-        mstr += ch_len;
-    }
-
-    return sub_len;
-}
-
-static const unsigned char* utf8_get_next_word (const unsigned char* mstr,
-                int mstrlen, WORDINFO* word_info)
-{
-    const unsigned char* mchar = mstr;
-    int ch_len;
-    UChar32 wc;
-
-    word_info->len = 0;
-    word_info->delimiter = '\0';
-    word_info->nr_delimiters = 0;
-
-    if (mstrlen == 0) return NULL;
-
-    while (mstrlen > 0) {
-        ch_len = utf8_len_first_char (mchar, mstrlen);
-
-        if (ch_len == 0)
-            break;
-
-        wc = utf8_char_glyph_value (NULL, 0, mchar, 0);
-        if (wc > 0x0FFF) {
-            if (word_info->len)
-                return mstr + word_info->len + word_info->nr_delimiters;
-            else { /* Treate the first char as a word */
-                word_info->len = ch_len;
-                return mstr + word_info->len + word_info->nr_delimiters;
-            }
-        }
-
-        switch (mchar[0]) {
-        case ' ':
-        case '\t':
-        case '\n':
-        case '\r':
-            if (word_info->delimiter == '\0') {
-                word_info->delimiter = mchar[0];
-                word_info->nr_delimiters ++;
-            }
-            else if (word_info->delimiter == mchar[0])
-                word_info->nr_delimiters ++;
-            else
-                return mstr + word_info->len + word_info->nr_delimiters;
-
-            break;
-
-        default:
-            if (word_info->delimiter != '\0')
-                return mstr + word_info->len + word_info->nr_delimiters;
-
-            word_info->len += ch_len;
-            break;
-        }
-
-        mchar += ch_len;
-        mstrlen -= ch_len;
-    }
-
-    return mstr + word_info->len + word_info->nr_delimiters;
-}
-
-static int utf8_pos_first_char (const unsigned char* mstr, int mstrlen)
-{
-    int ch_len;
-    int pos = 0;
-
-    while (mstrlen > 0) {
-        ch_len = utf8_len_first_char (mstr, mstrlen);
-
-        /*charset encoding mismatch*/
-        if (ch_len == 0)
-            return -1;
-
-        if (ch_len > 0)
-            return pos;
-
-        pos += ch_len;
-        mstrlen -= ch_len;
-        mstr += ch_len;
-    }
-
-    return -1;
-}
-
-static int utf8_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
-{
-    int first, len;
-
-    if (wc < 0x80) {
-        first = 0;
-        len = 1;
-    }
-    else if (wc < 0x800) {
-        first = 0xC0;
-        len = 2;
-    }
-    else if (wc < 0x10000) {
-        first = 0xE0;
-        len = 3;
-    }
-    else if (wc < 0x200000) {
-        first = 0xF0;
-        len = 4;
-    }
-    else if (wc < 0x400000) {
-        first = 0xF8;
-        len = 5;
-    }
-    else {
-        first = 0xFC;
-        len = 6;
-    }
-
-    switch (len) {
-        case 6:
-            mchar [5] = (wc & 0x3f) | 0x80; wc >>= 6; /* Fall through */
-        case 5:
-            mchar [4] = (wc & 0x3f) | 0x80; wc >>= 6; /* Fall through */
-        case 4:
-            mchar [3] = (wc & 0x3f) | 0x80; wc >>= 6; /* Fall through */
-        case 3:
-            mchar [2] = (wc & 0x3f) | 0x80; wc >>= 6; /* Fall through */
-        case 2:
-            mchar [1] = (wc & 0x3f) | 0x80; wc >>= 6; /* Fall through */
-        case 1:
-            mchar [0] = wc | first;
-    }
-
-    return len;
-}
-
-static CHARSETOPS CharsetOps_utf8 = {
-    0x7FFFFFFF,
-    6,
-    FONT_CHARSET_UTF8,
-    0,
-    utf8_len_first_char,
-    utf8_char_glyph_value,
-    NULL,
-    utf8_glyph_type,
-    utf8_nr_chars_in_str,
-    utf8_is_this_charset,
-    utf8_len_first_substr,
-    utf8_get_next_word,
-    utf8_pos_first_char,
-    unicode_bidi_glyph_type,
-    unicode_bidi_mirror_glyph,
-    NULL,
-    utf8_conv_from_uc32,
-};
-
-/************************* UTF-16LE Specific Operations ***********************/
-static int utf16le_len_first_char (const unsigned char* mstr, int len)
-{
-    UChar16 w1, w2;
-
-    if (len < 2)
-        return 0;
-
-    w1 = MAKEWORD16 (mstr[0], mstr[1]);
-
-    if (w1 < 0xD800 || w1 > 0xDFFF)
-        return 2;
-
-    if (w1 >= 0xD800 && w1 <= 0xDBFF) {
-        if (len < 4)
-            return 0;
-        w2 = MAKEWORD16 (mstr[2], mstr[3]);
-        if (w2 < 0xDC00 || w2 > 0xDFFF)
-            return 0;
-    }
-
-    return 4;
-}
-
-static Glyph32 utf16le_char_glyph_value (const unsigned char* pre_mchar, 
-                int pre_len, const unsigned char* cur_mchar, int cur_len)
-{
-    UChar16 w1, w2;
-    UChar32 wc;
-
-    w1 = MAKEWORD16 (cur_mchar[0], cur_mchar[1]);
-
-    if (w1 < 0xD800 || w1 > 0xDFFF)
-        return w1;
-
-    w2 = MAKEWORD16 (cur_mchar[2], cur_mchar[3]);
-
-    wc = w1;
-    wc <<= 10;
-    wc |= (w2 & 0x03FF);
-    wc += 0x10000;
-
-    return wc;
-}
-
-static unsigned int utf16_glyph_type (Glyph32 glyph_value)
-{
-    if (glyph_value == 0xFEFF) {
-        return MCHAR_TYPE_ZEROWIDTH;
-    }
-    else if (glyph_value < 0x80) {
-        return sb_glyph_type (glyph_value);
-    }
-    else {
-        /* TODO: get the subtype of the char */
-        return UNICODE_TYPE (glyph_value);
-    }
-}
-
-static int utf16le_nr_chars_in_str (const unsigned char* mstr, int mstrlen)
-{
-    int charlen;
-    int n = 0;
-    int left = mstrlen;
-
-    while (left >= 0) {
-        charlen = utf16le_len_first_char (mstr, left);
-        if (charlen > 0)
-            n ++;
-
-        left -= charlen;
-        mstr += charlen;
-    }
-
-    return n;
-}
-
-static int utf16le_is_this_charset (const unsigned char* charset)
-{
-    int i;
-    char name [LEN_FONT_NAME + 1];
-
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
-        if (charset [i] == '\0')
-            break;
-        name [i] = toupper (charset [i]);
-    }
-    name [i] = '\0';
-
-    if (strstr (name, "UTF") && strstr (name, "16LE"))
-        return 0;
-
-    return 1;
-}
-
-static int utf16le_len_first_substr (const unsigned char* mstr, int mstrlen)
-{
-    int ch_len;
-    int sub_len = 0;
-
-    while (mstrlen > 0) {
-        ch_len = utf16le_len_first_char (mstr, mstrlen);
-
-        if (ch_len == 0)
-            break;
-
-        sub_len += ch_len;
-        mstrlen -= ch_len;
-        mstr += ch_len;
-    }
-
-    return sub_len;
-}
-
-static const unsigned char* utf16le_get_next_word (const unsigned char* mstr,
-                int mstrlen, WORDINFO* word_info)
-{
-    const unsigned char* mchar = mstr;
-    UChar32 wc;
-    int ch_len;
-
-    word_info->len = 0;
-    word_info->delimiter = '\0';
-    word_info->nr_delimiters = 0;
-
-    if (mstrlen == 0) return NULL;
-
-    while (mstrlen > 0) {
-        ch_len = utf16le_len_first_char (mchar, mstrlen);
-
-        if (ch_len == 0)
-            break;
-
-        wc = utf16le_char_glyph_value (NULL, 0, mchar, 0);
-        if (wc > 0x0FFF) {
-            if (word_info->len)
-                return mstr + word_info->len + word_info->nr_delimiters;
-            else { /* Treate the first char as a word */
-                word_info->len = ch_len;
-                return mstr + word_info->len + word_info->nr_delimiters;
-            }
-        }
-
-        switch (wc) {
-        case ' ':
-        case '\t':
-        case '\n':
-        case '\r':
-            if (word_info->delimiter == '\0') {
-                word_info->delimiter = (unsigned char)wc;
-                word_info->nr_delimiters += ch_len;
-            }
-            else if (word_info->delimiter == (unsigned char)wc)
-                word_info->nr_delimiters += ch_len;
-            else
-                return mstr + word_info->len + word_info->nr_delimiters;
-            break;
-
-        default:
-            if (word_info->delimiter != '\0')
-                return mstr + word_info->len + word_info->nr_delimiters;
-
-            word_info->len += ch_len;
-            break;
-        }
-
-        mstrlen -= ch_len;
-        mchar += ch_len;
-    }
-
-    return mstr + word_info->len + word_info->nr_delimiters;
-}
-
-static int utf16le_pos_first_char (const unsigned char* mstr, int mstrlen)
-{
-    int ch_len;
-    int pos = 0;
-
-    while (mstrlen > 0) {
-        ch_len = utf16le_len_first_char (mstr, mstrlen);
-
-        if (ch_len > 0)
-            return pos;
-
-        pos += ch_len;
-        mstrlen -= ch_len;
-        mstr += ch_len;
-    }
-
-    return -1;
-}
-
-static int utf16le_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
-{
-    UChar16 w1, w2;
-
-    if (wc > 0x10FFFF) {
-        return 0;
-    }
-
-    if (wc < 0x10000) {
-        mchar [0] = LOBYTE (wc);
-        mchar [1] = HIBYTE (wc);
-        return 2;
-    }
-
-    wc -= 0x10000;
-    w1 = 0xD800;
-    w2 = 0xDC00;
-
-    w1 |= (wc >> 10);
-    w2 |= (wc & 0x03FF);
-
-    mchar [0] = LOBYTE (w1);
-    mchar [1] = HIBYTE (w1);
-    mchar [2] = LOBYTE (w2);
-    mchar [3] = HIBYTE (w2);
-    return 4;
-}
-
-static CHARSETOPS CharsetOps_utf16le = {
-    0x7FFFFFFF,
-    4,
-    FONT_CHARSET_UTF16LE,
-    0,
-    utf16le_len_first_char,
-    utf16le_char_glyph_value,
-    NULL,
-    utf16_glyph_type,
-    utf16le_nr_chars_in_str,
-    utf16le_is_this_charset,
-    utf16le_len_first_substr,
-    utf16le_get_next_word,
-    utf16le_pos_first_char,
-    unicode_bidi_glyph_type,
-    unicode_bidi_mirror_glyph,
-    NULL,
-    utf16le_conv_from_uc32
-};
-
-/************************* UTF-16BE Specific Operations ***********************/
-static int utf16be_len_first_char (const unsigned char* mstr, int len)
-{
-    UChar16 w1, w2;
-
-    if (len < 2)
-        return 0;
-
-    w1 = MAKEWORD16 (mstr[1], mstr[0]);
-
-    if (w1 < 0xD800 || w1 > 0xDFFF)
-        return 2;
-
-    if (w1 >= 0xD800 && w1 <= 0xDBFF) {
-        if (len < 4)
-            return 0;
-        w2 = MAKEWORD16 (mstr[3], mstr[2]);
-        if (w2 < 0xDC00 || w2 > 0xDFFF)
-            return 0;
-    }
-
-    return 4;
-}
-
-static Glyph32 utf16be_char_glyph_value (const unsigned char* pre_mchar, 
-                int pre_len, const unsigned char* cur_mchar, int cur_len)
-{
-    UChar16 w1, w2;
-    UChar32 wc;
-
-    w1 = MAKEWORD16 (cur_mchar[1], cur_mchar[0]);
-
-    if (w1 < 0xD800 || w1 > 0xDFFF)
-        return w1;
-
-    w2 = MAKEWORD16 (cur_mchar[3], cur_mchar[2]);
-
-    wc = w1;
-    wc <<= 10;
-    wc |= (w2 & 0x03FF);
-    wc += 0x10000;
-
-    return wc;
-}
-
-static int utf16be_nr_chars_in_str (const unsigned char* mstr, int mstrlen)
-{
-    int charlen;
-    int n = 0;
-    int left = mstrlen;
-
-    while (left >= 0) {
-        charlen = utf16be_len_first_char (mstr, left);
-        if (charlen > 0)
-            n ++;
-
-        left -= charlen;
-        mstr += charlen;
-    }
-
-    return n;
-}
-
-static int utf16be_is_this_charset (const unsigned char* charset)
-{
-    int i;
-    char name [LEN_FONT_NAME + 1];
-
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
-        if (charset [i] == '\0')
-            break;
-        name [i] = toupper (charset [i]);
-    }
-    name [i] = '\0';
-
-    if (strstr (name, "UTF") && strstr (name, "16BE"))
-        return 0;
-
-    return 1;
-}
-
-static int utf16be_len_first_substr (const unsigned char* mstr, int mstrlen)
-{
-    int ch_len;
-    int sub_len = 0;
-
-    while (mstrlen > 0) {
-        ch_len = utf16be_len_first_char (mstr, mstrlen);
-
-        if (ch_len == 0)
-            break;
-
-        sub_len += ch_len;
-        mstrlen -= ch_len;
-        mstr += ch_len;
-    }
-
-    return sub_len;
-}
-
-static const unsigned char* utf16be_get_next_word (const unsigned char* mstr,
-                int mstrlen, WORDINFO* word_info)
-{
-    const unsigned char* mchar = mstr;
-    UChar32 wc;
-    int ch_len;
-
-    word_info->len = 0;
-    word_info->delimiter = '\0';
-    word_info->nr_delimiters = 0;
-
-    if (mstrlen == 0) return NULL;
-
-    while (mstrlen > 0) {
-        ch_len = utf16be_len_first_char (mchar, mstrlen);
-
-        if (ch_len == 0)
-            break;
-
-        wc = utf16be_char_glyph_value (NULL, 0, mchar, 0);
-        if (wc > 0x0FFF) {
-            if (word_info->len)
-                return mstr + word_info->len + word_info->nr_delimiters;
-            else { /* Treate the first char as a word */
-                word_info->len = ch_len;
-                return mstr + word_info->len + word_info->nr_delimiters;
-            }
-        }
-
-        switch (wc) {
-        case ' ':
-        case '\t':
-        case '\n':
-        case '\r':
-            if (word_info->delimiter == '\0') {
-                word_info->delimiter = (unsigned char)wc;
-                word_info->nr_delimiters += ch_len;
-            }
-            else if (word_info->delimiter == (unsigned char)wc)
-                word_info->nr_delimiters += ch_len;
-            else
-                return mstr + word_info->len + word_info->nr_delimiters;
-            break;
-
-        default:
-            if (word_info->delimiter != '\0')
-                return mstr + word_info->len + word_info->nr_delimiters;
-
-            word_info->len += ch_len;
-            break;
-        }
-
-        mstrlen -= ch_len;
-        mchar += ch_len;
-    }
-
-    return mstr + word_info->len + word_info->nr_delimiters;
-}
-
-static int utf16be_pos_first_char (const unsigned char* mstr, int mstrlen)
-{
-    int ch_len;
-    int pos = 0;
-
-    while (mstrlen > 0) {
-        ch_len = utf16be_len_first_char (mstr, mstrlen);
-
-        if (ch_len > 0)
-            return pos;
-
-        pos += ch_len;
-        mstrlen -= ch_len;
-        mstr += ch_len;
-    }
-
-    return -1;
-}
-
-static int utf16be_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
-{
-    UChar16 w1, w2;
-
-    if (wc > 0x10FFFF) {
-        return 0;
-    }
-
-    if (wc < 0x10000) {
-        mchar [1] = LOBYTE (wc);
-        mchar [0] = HIBYTE (wc);
-        return 2;
-    }
-
-    wc -= 0x10000;
-    w1 = 0xD800;
-    w2 = 0xDC00;
-
-    w1 |= (wc >> 10);
-    w2 |= (wc & 0x03FF);
-
-    mchar [1] = LOBYTE (w1);
-    mchar [0] = HIBYTE (w1);
-    mchar [3] = LOBYTE (w2);
-    mchar [2] = HIBYTE (w2);
-    return 4;
-}
-
-static CHARSETOPS CharsetOps_utf16be = {
-    0x7FFFFFFF,
-    4,
-    FONT_CHARSET_UTF16BE,
-    0,
-    utf16be_len_first_char,
-    utf16be_char_glyph_value,
-    NULL,
-    utf16_glyph_type,
-    utf16be_nr_chars_in_str,
-    utf16be_is_this_charset,
-    utf16be_len_first_substr,
-    utf16be_get_next_word,
-    utf16be_pos_first_char,
-    unicode_bidi_glyph_type,
-    unicode_bidi_mirror_glyph,
-    NULL,
-    utf16be_conv_from_uc32
-};
-
-/************************* End of UNICODE *************************************/
-#endif /* _UNICODE */
+extern CHARSETOPS __mg_CharsetOps_utf8;
+extern CHARSETOPS __mg_CharsetOps_utf16le;
+extern CHARSETOPS __mg_CharsetOps_utf16be;
+#endif /*_MGCHARSET_UNICODE */
 
 static CHARSETOPS* Charsets [] =
 {
@@ -4268,9 +3503,9 @@ static CHARSETOPS* Charsets [] =
     &CharsetOps_jisx0208_1,
 #endif
 #ifdef _MGCHARSET_UNICODE
-    &CharsetOps_utf8,
-    &CharsetOps_utf16le,
-    &CharsetOps_utf16be,
+    &__mg_CharsetOps_utf8,
+    &__mg_CharsetOps_utf16le,
+    &__mg_CharsetOps_utf16be,
 #endif
 };
 
@@ -4281,7 +3516,7 @@ CHARSETOPS* GetCharsetOps (const char* charset)
     int i;
 
     for (i = 0; i < NR_CHARSETS; i++) {
-        if ((*Charsets [i]->is_this_charset) 
+        if ((*Charsets [i]->is_this_charset)
                         ((const unsigned char*)charset) == 0)
             return Charsets [i];
     }
@@ -4292,9 +3527,9 @@ CHARSETOPS* GetCharsetOps (const char* charset)
 CHARSETOPS* GetCharsetOpsEx (const char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -4314,7 +3549,7 @@ BOOL IsCompatibleCharset (const char* charset, CHARSETOPS* ops)
     int i;
 
     for (i = 0; i < NR_CHARSETS; i++) {
-        if ((*Charsets [i]->is_this_charset) 
+        if ((*Charsets [i]->is_this_charset)
                         ((const unsigned char*)charset) == 0)
             if (Charsets [i] == ops)
                 return TRUE;

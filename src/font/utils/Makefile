@@ -1,28 +1,97 @@
-CC=gcc 
-CFLAGS=-Wall -g
+CC=gcc
+CFLAGS=-Wall -Werror -g -D__MINIGUI_LIB__ -I../../../include/
+COMPRESSION=2
 
-all:bin2c qpf2c vbf2c upgradevbf bdf2vbf dumpupf qpf2upf upf2c
+all:mkmap-ucs-gb18030 mkmap-ucs-gb2312 \
+    unicode-version.h \
+    gen-unicode-version \
+    gen-bidi-type-tab \
+    gen-joining-type-tab \
+    gen-arabic-shaping-tab \
+    gen-mirroring-tab \
+    gen-brackets-tab \
+    gen-brackets-type-tab \
+    gen-vop-tab
 
-bin2c:bin2c.o
+mkmap-ucs-gb2312:mkmap-ucs-gb2312.o
 
-qpf2c:qpf2c.o
+mkmap-ucs-gb18030:mkmap-ucs-gb18030.o
 
-qpf2upf:qpf2upf.o
+gen-unicode-version:gen-unicode-version.o
+gen-bidi-type-tab:gen-bidi-type-tab.o packtab.o
+gen-joining-type-tab:gen-joining-type-tab.o packtab.o
+gen-arabic-shaping-tab:gen-arabic-shaping-tab.o packtab.o
+gen-mirroring-tab:gen-mirroring-tab.o packtab.o
+gen-brackets-tab:gen-brackets-tab.o packtab.o
+gen-brackets-type-tab:gen-brackets-type-tab.o packtab.o
+gen-vop-tab:gen-vop-tab.o packtab.o
 
-upf2c:upf2c.c
+tables:unicode-version.h \
+    unicode-bidi-type-table.inc \
+    unicode-joining-type-table.inc \
+    unicode-arabic-shaping-table.inc \
+    unicode-bidi-mirroring-table.inc \
+    unicode-bidi-brackets-table.inc \
+    unicode-bidi-brackets-type-table.inc \
+    unicode-vop-table.inc
 
-vbf2c:vbf2c.o
-
-makegbrbf:makegbrbf.o
-
-makeucs2gbtable:makeucs2gbtable.o
-
-upgradevbf:upgradevbf.o
-
-bdf2vbf:bdf2vbf.c
-
-dumpupf:
-	gcc -lminigui_ths -lttf  -ljpeg -lpng -lpthread -lm -lz -o dumpupf dumpupf.c
+unicode-version.h:ucd/ReadMe.txt gen-unicode-version
+	./gen-unicode-version ucd/ReadMe.txt > unicode-version.h
 
 clean:
-	rm -f qpf2c qpf2upf upf2c vbf2c bin2c dumpqpf dumpupf dumpqpf2 upgradevbf bdf2vbf *.o
+	rm -f *.o unicode-*.h unicode-*.inc \
+    mkmap-ucs-gb2312 mkmap-gb18030-ucs.c mkmap-ucs-gb18030 \
+    gen-unicode-version \
+    gen-bidi-type-tab \
+    gen-joining-type-tab \
+    gen-arabic-shaping-tab \
+    gen-mirroring-tab \
+    gen-brackets-tab \
+    gen-brackets-type-tab \
+    gen-vop-tab
+
+unicode-bidi-type-table.inc: \
+		ucd/UnicodeData.txt \
+		unicode-version.h \
+		gen-bidi-type-tab
+	./gen-bidi-type-tab $(COMPRESSION) $^ > $@
+
+unicode-joining-type-table.inc: \
+		ucd/UnicodeData.txt \
+		ucd/ArabicShaping.txt \
+		unicode-version.h \
+		gen-joining-type-tab
+	./gen-joining-type-tab $(COMPRESSION) $^ > $@
+
+unicode-arabic-shaping-table.inc: \
+		ucd/UnicodeData.txt \
+		ucd/ArabicShaping.txt \
+		unicode-version.h \
+		gen-arabic-shaping-tab
+	./gen-arabic-shaping-tab $(COMPRESSION) $^ > $@
+
+unicode-bidi-mirroring-table.inc: \
+		ucd/BidiMirroring.txt \
+		unicode-version.h \
+		gen-mirroring-tab
+	./gen-mirroring-tab $(COMPRESSION) $^ > $@
+
+unicode-bidi-brackets-table.inc: \
+		ucd/BidiBrackets.txt \
+		ucd/UnicodeData.txt \
+		unicode-version.h \
+		gen-brackets-tab
+	./gen-brackets-tab $(COMPRESSION) $^ > $@
+
+unicode-bidi-brackets-type-table.inc: \
+		ucd/BidiBrackets.txt \
+		unicode-version.h \
+		gen-brackets-type-tab
+	./gen-brackets-type-tab $(COMPRESSION) $^ > $@
+
+unicode-vop-table.inc: \
+		ucd/VerticalOrientation.txt \
+		unicode-version.h \
+		gen-vop-tab
+	./gen-vop-tab $(COMPRESSION) $^ > $@
+

@@ -46,12 +46,15 @@
 extern "C" {
 #endif  /* __cplusplus */
 
-//#define ARABIC_DEBUG
-#ifdef ARABIC_DEBUG
-    #define DBGLOG(s)      do { if (1) { fprintf(stderr, s); } } while (0)
-    #define DBGLOG2(s, t1)  do { if (1) { fprintf(stderr, s, t1); } } while (0)
-    #define DBGLOG3(s, t1,t2)  do { if (1) { fprintf(stderr, s, t1,t2); } } while (0)
-    #define DBGLOG4(s, t1,t2,t3)  do { if (1) { fprintf(stderr, s, t1,t2,t3); } } while (0)
+#ifdef BIDI_DEBUG
+    #define DBGLOG(s)      \
+        do { if (1) { fprintf(stderr, s); } } while (0)
+    #define DBGLOG2(s, t1)  \
+        do { if (1) { fprintf(stderr, s, t1); } } while (0)
+    #define DBGLOG3(s, t1,t2) \
+        do { if (1) { fprintf(stderr, s, t1, t2); } } while (0)
+    #define DBGLOG4(s, t1,t2,t3) \
+        do { if (1) { fprintf(stderr, s, t1, t2, t3); } } while (0)
 #else
     #define DBGLOG(s)
     #define DBGLOG2(s, t1)
@@ -61,25 +64,50 @@ extern "C" {
 
 typedef struct _TYPERUN TYPERUN;
 
+typedef struct _BIDICHAR_TYPE_MAP {
+    // Starting code point of Unicode character
+    Uchar32   chv;
+    // Total number of Unicode characters of same type starting from chv
+    Uint16    count;
+    // Type of Unicode characters
+    Uint16    type;
+} BIDICHAR_TYPE_MAP;
+
+#define _BIDI_BRACKET_NONE       0
+#define _BIDI_BRACKET_CLOSE      1
+#define _BIDI_BRACKET_OPEN       2
+
+// NOTE: It is enough to use Uint16 for Unicode bracket table
+typedef struct _BIDICHAR_BRACKET {
+    Uint16 chv;
+    Sint8  bracket_off;
+    Uint8  type;
+} BIDICHAR_BRACKET;
+
+// NOTE: It is enough to use Uint16 for Unicode mirror map
 typedef struct _BIDICHAR_MIRROR_MAP {
-    Glyph32 glyph;
-    Glyph32 mirrored;
+    Uint16 chv;
+    Uint16 mirrored;
 } BIDICHAR_MIRROR_MAP;
 
-typedef void (*CB_DO_REORDER) (void* context, int len, int pos);
+Achar32* __mg_legacy_bidi_achars_reorder (const CHARSETOPS* charset_ops,
+        Achar32* achars, int len, int pel,
+        void* extra, CB_REVERSE_ARRAY cb_reverse_extra);
 
-Glyph32* __mg_charset_bidi_glyphs_reorder (const CHARSETOPS* charset_ops, Glyph32* glyphs, int len);
+void __mg_legacy_bidi_get_embeddlevels (const CHARSETOPS* charset_ops,
+        Achar32* achars, int len, int pel, Uint8* embedding_levels, Uint8 type);
 
-Glyph32* __mg_charset_bidi_map_reorder (const CHARSETOPS* charset_ops, Glyph32* glyphs, 
-        int len, GLYPHMAPINFO* map);
+Uint32 __mg_legacy_bidi_str_base_dir (const CHARSETOPS* charset_ops,
+        Achar32* achars, int len);
 
-void __mg_charset_bidi_get_embeddlevels (const CHARSETOPS* charset_ops, Glyph32* glyphs, 
-        int len, Uint8* embedding_level_list, Uint8 type);
+#if 0
+// Deprecated
+Achar32* __mg_legacy_bidi_map_reorder (const CHARSETOPS* charset_ops,
+        Achar32* achars, int len, GLYPHMAPINFO* map, int pel);
 
-Glyph32* __mg_charset_bidi_index_reorder (const CHARSETOPS* charset_ops, Glyph32* glyphs, 
-        int len, int* index_map);
-
-Uint32 __mg_charset_bidi_str_base_dir (const CHARSETOPS* charset_ops, Glyph32* glyphs, int len);
+Achar32* __mg_legacy_bidi_index_reorder (const CHARSETOPS* charset_ops,
+        Achar32* achars, int len, int* index_map, int pel);
+#endif
 
 #ifdef __cplusplus
 }

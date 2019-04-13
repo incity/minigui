@@ -104,6 +104,12 @@ int InitGUI (int argc, const char* agr[])
         tcgetattr (0, &savedtermio);
 #endif
 
+    step++;
+    if (!mg_InitSliceAllocator ()) {
+        fprintf (stderr, "KERNEL>InitGUI: failed to initialize slice allocator!\n");
+        return step;
+    }
+
     if (!mg_InitFixStr ()) {
         err_message (step, "Can not initialize Fixed String heap!\n");
         return step;
@@ -158,6 +164,7 @@ void TerminateGUI (int rcByGUI)
 {
     mg_TerminateMisc ();
     mg_TerminateFixStr ();
+    mg_TerminateSliceAllocator();
 }
 
 #warning ExitGUISafely?
@@ -248,36 +255,32 @@ failure:
 static void sig_handler (int v)
 {
     if (v == SIGSEGV) {
-#ifdef WIN32
-		raise(SIGABRT);
-#else
         kill (getpid(), SIGABRT); /* cause core dump */
-#endif
-    }else if (__mg_quiting_stage > 0) {
+    }
+    else if (v == SIGINT) {
+        _exit(1); /* force to quit */
+    }
+    else if (__mg_quiting_stage > 0) {
         ExitGUISafely(-1);
-    }else{
+    }
+    else {
         exit(1); /* force to quit */
     }
 }
 
 static BOOL InstallSEGVHandler (void)
 {
-#ifdef WIN32
-	signal(SIGSEGV, sig_handler);
-	signal(SIGTERM, sig_handler);
-	signal(SIGINT, sig_handler);
-#else
     struct sigaction siga;
-    
+
     siga.sa_handler = sig_handler;
     siga.sa_flags = 0;
-    
+
     memset (&siga.sa_mask, 0, sizeof (sigset_t));
     sigaction (SIGSEGV, &siga, NULL);
     sigaction (SIGTERM, &siga, NULL);
     sigaction (SIGINT, &siga, NULL);
     sigaction (SIGPIPE, &siga, NULL);
-#endif
+
     return TRUE;
 }
 
@@ -320,6 +323,12 @@ int InitGUI (int argc, const char* agr[])
     __mg_def_proc[0] = PreDefMainWinProc;
     __mg_def_proc[1] = PreDefDialogProc;
     __mg_def_proc[2] = PreDefControlProc;
+
+    step++;
+    if (!mg_InitSliceAllocator ()) {
+        fprintf (stderr, "KERNEL>InitGUI: failed to initialize slice allocator!\n");
+        return step;
+    }
 
     if (!mg_InitFixStr ()) {
         err_message (step, "Can not initialize Fixed String heap!\n");
@@ -510,8 +519,6 @@ void TerminateGUI (int rcByGUI)
 #ifdef _MGHAVE_CURSOR
     mg_TerminateCursor ();
 #endif
-    mg_TerminateMisc ();
-    mg_TerminateFixStr ();
 
 #ifdef _MGRM_PROCESSES
     if (mgIsServer) 
@@ -535,6 +542,10 @@ void TerminateGUI (int rcByGUI)
         client_ClientCleanup ();
     }
 #endif
+
+    mg_TerminateMisc ();
+    mg_TerminateFixStr ();
+    mg_TerminateSliceAllocator();
 }
 #endif /* ifdef _MG_MINIMALGDI */
 

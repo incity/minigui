@@ -882,7 +882,7 @@ static int srvStartDragWindow (int cli, int idx_znode,
             SetCursor (GetSystemCursor (IDC_SIZENESW));
             break;
         default:
-            _MG_PRINTF ("KERNEL>Desktop: Drag and drop window: bad location\n");
+            _WRN_PRINTF ("KERNEL>Desktop: Drag and drop window: bad location\n");
             break;
     }
 
@@ -980,7 +980,7 @@ int __mg_do_drag_drop_window (int msg, int x, int y)
                     break;
 
                 default:
-                    _MG_PRINTF ("KERNEL>Desktop: __mg_do_drag_drop_window: bad location\n");
+                    _WRN_PRINTF ("KERNEL>Desktop: __mg_do_drag_drop_window: bad location\n");
                     break;
         }
 
@@ -1038,7 +1038,7 @@ static int srvChangeCaption (int cli, int idx_znode, const char *caption)
         if (caplen < 32) {
             strcpy (nodes[idx_znode].caption, caption);
         } else {
-            GetTextCharPos (menufont, caption, caplen, (32 - 3), /* '...' = 3*/
+            get_text_char_pos (menufont, caption, caplen, (32 - 3), /* '...' = 3*/
                                  &fit_chars, pos_chars);
             memcpy(nodes[idx_znode].caption, 
                    caption, pos_chars[fit_chars-1]);

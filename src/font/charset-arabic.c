@@ -1,39 +1,39 @@
 /*
- *   This file is part of MiniGUI, a mature cross-platform windowing 
+ *   This file is part of MiniGUI, a mature cross-platform windowing
  *   and Graphics User Interface (GUI) support system for embedded systems
  *   and smart IoT devices.
- * 
+ *
  *   Copyright (C) 2002~2018, Beijing FMSoft Technologies Co., Ltd.
  *   Copyright (C) 1998~2002, WEI Yongming
- * 
+ *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- * 
+ *
  *   This program is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU General Public License for more details.
- * 
+ *
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  *   Or,
- * 
+ *
  *   As this program is a library, any link to this program must follow
  *   GNU General Public License version 3 (GPLv3). If you cannot accept
  *   GPLv3, you need to be licensed from FMSoft.
- * 
+ *
  *   If you have got a commercial license of this program, please use it
  *   under the terms and conditions of the commercial license.
- * 
+ *
  *   For more information about the commercial license, please refer to
  *   <http://www.minigui.com/en/about/licensing-policy/>.
  */
 /*
 ** charset.c: The charset's arabic operation set.
-** 
+**
 ** Created by houhuihua at 2008/01/23
 */
 #ifdef _MGCHARSET_ARABIC
@@ -51,7 +51,7 @@ typedef struct _SHAPEINFO {
 #define MAX_GLYPH_VALUE 0x133
 #define SHAPENUMBER 36
 static const SHAPEINFO shape_info[SHAPENUMBER] = {
-      /*        Base                 Isol    Final    Initial    Medial */
+      /* Base                Isol            Final            Initial         Medial */
     { /* 0  0xC1 (0x0621) */ 0xC1/*0xFE80*/, 0x00,            0x00,           0x00 /* Arabic letter Hamza                 */ },
     { /* 1  0xC2 (0x0622) */ 0xC2/*0xFE81*/, 0x102/*0xFE82*/, 0x00,           0x00 /* Arabic letter Alef with Madda above */ },
     { /* 2  0xC3 (0x0623) */ 0xC3/*0xFE83*/, 0x103/*0xFE84*/, 0x00,           0x00 /* Arabic letter Alef with Hamza above */ },
@@ -94,9 +94,9 @@ static const SHAPEINFO shape_info[SHAPENUMBER] = {
 static int iso8859_6_is_this_charset (const unsigned char* charset)
 {
     int i;
-    char name [LEN_FONT_NAME + 1];
+    char name [LEN_LOGFONT_NAME_FIELD + 1];
 
-    for (i = 0; i < LEN_FONT_NAME + 1; i++) {
+    for (i = 0; i < LEN_LOGFONT_NAME_FIELD + 1; i++) {
         if (charset [i] == '\0')
             break;
         name [i] = toupper (charset [i]);
@@ -123,19 +123,19 @@ static unsigned short iso8859_68x_unicode_map [] =
     0xFEEF, 0xFE94, 0xFEB2, 0xFEB6, /*0x8D~0x90*/
     0xFEBA, 0xFEBE, 0xFEC2, 0xFEC8, /*0x93~0x94*/
     0xFECC, 0xFECA, 0xFED0, 0xFECE,
-    0xFED4, 0xFED8, 0xFEDC, 0xFEEC, 
+    0xFED4, 0xFED8, 0xFEDC, 0xFEEC,
     0xFEEA, 0xFEF1, 0xFE89, 0x0020,
                                     /*two cell ligature.*/
-    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, /*0xA1~0xA4*/  
+    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, /*0xA1~0xA4*/
     0xFFFF, 0xFFFF, 0xFFFF,         /*0xA5~0xA7*/
 
     0xFE70, 0xFE72, 0xFE74, 0xFE76, /*0xA8~0xAB*/
     0xFE78, 0xFE7A, 0xFE7C, 0xFE7E, /*0xAC~0xAF*/
     0x0660, 0x0661, 0x0662, 0x0663, /*0~9*/
-    0x0664, 0x0665, 0x0666, 0x0667, 
-    0x0668, 0x0669, 0x060C, 0x061B, 
+    0x0664, 0x0665, 0x0666, 0x0667,
+    0x0668, 0x0669, 0x060C, 0x061B,
     0xFE71, 0xFE72, 0xFE74, 0x061F, /*0xBD~0xBF*/
-                                    
+
     0xFE8B, 0xFE80,                 /*0xC0,0xC1*/
     0xFE81, 0xFE83, 0xFE85, 0xFE87, /*0xC2~0xC5*/
     0xFE8A, 0xFE8D, 0xFE8F, 0xFE93, /*0xC6~0xC9*/
@@ -160,31 +160,33 @@ static unsigned short iso8859_68x_unicode_map [] =
     0xFE86, 0xFE88, 0xFE8C, 0xFE8E, /*0x104~0x107*/
     0xFE90, 0xFE96, 0xFE9A, 0xFE9E, /*0x108~0x10B*/
     0xFEA2, 0xFEA6, 0xFEAA, 0xFEAC, /*0x10C~0x10F*/
-                                    
+
     0xFEAE, 0xFEB0, 0xFEC3, 0xFEC7, /*0x110~0x113*/
     0xFED2, 0xFED6, 0xFEDA, 0xFEDE, /*0x114~0x117*/
     0xFEE2, 0xFEE6, 0xFEEA, 0xFEEE, /*0x118~0x11B*/
     0xFEF0, 0xFEF2, 0xFE92, 0xFE98, /*0x11C~0x11F*/
-                                    
+
     0xFE9C, 0xFEA0, 0xFEA4, 0xFEA8, /*0x120~0x123*/
     0xFEB4, 0xFEB8, 0xFEBC, 0xFEC0, /*0x124~0x127*/
     0xFEE0, 0xFEE4, 0xFEE8, 0xFEF4, /*0x128~0x12B*/
-                                    
+
     0xFEFB, 0xFEFC, 0xFEF5, 0xFEF6, /*0x12C~0x12F*/
     0xFEF7, 0xFEF8, 0xFEF9, 0xFEFA, /*0x130~0x133*/
 };
 
-static UChar32 iso8859_6_conv_to_uc32 (Glyph32 glyph_value)
+static Uchar32 iso8859_6_conv_to_uc32 (Achar32 chv)
 {
-    if (glyph_value < 0x81)
-        return (Glyph32) (glyph_value);
-    else if (glyph_value <= MAX_GLYPH_VALUE )
-        return (Glyph32) iso8859_68x_unicode_map[glyph_value - 0x81];
-    else 
+    chv = REAL_ACHAR(chv);
+
+    if (chv < 0x81)
+        return (Achar32) (chv);
+    else if (chv <= MAX_GLYPH_VALUE )
+        return (Achar32) iso8859_68x_unicode_map[chv - 0x81];
+    else
         return 0xFFFF;
 }
 
-static int iso8859_6_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
+static int iso8859_6_conv_from_uc32 (Uchar32 wc, unsigned char* mchar)
 {
     switch (wc) {
         case 0x060C:
@@ -212,8 +214,8 @@ static int iso8859_6_conv_from_uc32 (UChar32 wc, unsigned char* mchar)
 }
 #endif
 
-/* must attetion the para s is arabic glyph value.*/
-static int is_arabic_glyph_vowel(Uint8 c)
+/* must attetion the para s is arabic chv value.*/
+static int is_arabic_char_vowel(Uint8 c)
 {
 
     if ((c >= 0x81) && (c <= 0x86)) return 1;
@@ -256,7 +258,7 @@ static int is_arabic_glyph_vowel(Uint8 c)
 
 /* this define is relative with fontset 0xa1~0xa7.
  * it it used for ligature such as LAM+ALEF, one ligature
- * have two fontset glyphs.*/
+ * have two fontset chvs.*/
 #define LAM_ALIF         0x12C //0xA1A5
 #define LAM_ALIF_F       0x12D //0xA1A6
 
@@ -272,15 +274,15 @@ static int is_arabic_glyph_vowel(Uint8 c)
 /* Because the get_ligature is close relative with fontset 6.8x, so
  * do it in the follow five functions, if the fontset is change, you only
  * need to implement follow five interface.
- * 1. get_vowel_glyph().
- * 2. get_twovowel_glyph().
- * 3. get_tadweel_glyph().
- * 4. get_ligature_glyph().
- * 5. get_punpoint_glyph().
+ * 1. get_vowel_char().
+ * 2. get_twovowel_char().
+ * 3. get_tadweel_char().
+ * 4. get_ligature_char().
+ * 5. get_punpoint_char().
  * houhh 20080128.
  * */
 
-static int fontset_68x_get_punpoint_glyph(Uint8 c)
+static int fontset_68x_get_punpoint_char(Uint8 c)
 {
     int ligature = -1;
     switch(c){
@@ -293,7 +295,7 @@ static int fontset_68x_get_punpoint_glyph(Uint8 c)
     return ligature;
 }
 
-static int fontset_68x_get_vowel_glyph(Uint8 c)
+static int fontset_68x_get_vowel_char(Uint8 c)
 {
     int ligature = -1;
     switch(c){
@@ -310,7 +312,7 @@ static int fontset_68x_get_vowel_glyph(Uint8 c)
     return ligature;
 }
 
-static int fontset_68x_get_twovowel_glyph(unsigned char c, unsigned char next, int* ignore)
+static int fontset_68x_get_twovowel_char(unsigned char c, unsigned char next, int* ignore)
 {
     int ligature = -1;
     if(c == SHADDA){
@@ -326,12 +328,12 @@ static int fontset_68x_get_twovowel_glyph(unsigned char c, unsigned char next, i
     }
     else {
         *ignore = 0;
-        ligature = fontset_68x_get_vowel_glyph(c);
+        ligature = fontset_68x_get_vowel_char(c);
     }
     return ligature;
 }
 
-static int fontset_68x_get_ligature_glyph(unsigned char c, BOOL prev_affects_joining, int* ignore)
+static int fontset_68x_get_ligature_char(unsigned char c, BOOL prev_affects_joining, int* ignore)
 {
     int ligature = -1;
     if(prev_affects_joining){
@@ -355,11 +357,11 @@ static int fontset_68x_get_ligature_glyph(unsigned char c, BOOL prev_affects_joi
     return ligature;
 }
 
-static int fontset_68x_get_tadweel_glyph(unsigned char c, unsigned char next, int* ignore)
+static int fontset_68x_get_tadweel_char(unsigned char c, unsigned char next, int* ignore)
 {
     int ligature = -1;
     if(c == SHADDA){
-        /* TADWEEL combine with two vowel except SUKUN 
+        /* TADWEEL combine with two vowel except SUKUN
          * can not combine with SHADDA.*/
         switch(next){
             case  FATHATAN: *ignore = 2; ligature = 0x87; break;
@@ -389,7 +391,7 @@ static int fontset_68x_get_tadweel_glyph(unsigned char c, unsigned char next, in
 }
 
 #ifndef _DEBUG
-static 
+static
 #endif
 int get_ligature(const unsigned char* mchar, int len, BOOL prev_affects_joining, int* ignore)
 {
@@ -399,13 +401,13 @@ int get_ligature(const unsigned char* mchar, int len, BOOL prev_affects_joining,
     if(ignore) *ignore = 0;
 
     cur_char = *mchar;
-    
-    ligature = fontset_68x_get_punpoint_glyph(cur_char);
+
+    ligature = fontset_68x_get_punpoint_char(cur_char);
     if(ligature > 0) return ligature;
-    
+
     if(len == 1){
         if (ISARABIC_VOWEL(cur_char)){
-            ligature = fontset_68x_get_vowel_glyph(cur_char);
+            ligature = fontset_68x_get_vowel_char(cur_char);
         }
         else if(cur_char == TADWEEL){
             ligature = TADWEEL;
@@ -414,16 +416,16 @@ int get_ligature(const unsigned char* mchar, int len, BOOL prev_affects_joining,
     else if(len > 1){
         next = *(mchar+1);
         if (ISARABIC_VOWEL(cur_char)){ /* two VOWEL, one must be SHADDA first. */
-            ligature = fontset_68x_get_twovowel_glyph(cur_char, next, ignore);
+            ligature = fontset_68x_get_twovowel_char(cur_char, next, ignore);
         }
         else if (cur_char == LAM) {    /* LAM+ALEF+HAMAZ+MADDA ligature. */
-            ligature = fontset_68x_get_ligature_glyph(next, prev_affects_joining, ignore);
-        } 
+            ligature = fontset_68x_get_ligature_char(next, prev_affects_joining, ignore);
+        }
         else if(cur_char == TADWEEL){  /* TADWEEL combine with VOWEL*/
             if(len > 2) next_next = *(mchar+2);
             else next_next = 0;
 
-            ligature = fontset_68x_get_tadweel_glyph(next, next_next, ignore);
+            ligature = fontset_68x_get_tadweel_char(next, next_next, ignore);
             if(ligature == -1 && cur_char == TADWEEL){
                 ligature = TADWEEL;
             }
@@ -447,148 +449,155 @@ static int iso8859_6_len_first_char (const unsigned char* mstr, int len)
         return 2;
     else if (ignore == 2)
         return 3;
-    else 
+    else
         return 1;
 
 }
 
 #define ISARABIC_LIG_HALF(s) ((s == 0xa5) || (s == 0xa6))
 
-static unsigned int iso8859_6_glyph_type (Glyph32 glyph_value)
+static unsigned int iso8859_6_char_type (Achar32 chv)
 {
-    unsigned int ch_type = MCHAR_TYPE_UNKNOWN;
+    unsigned int ch_type = ACHAR_BASIC_UNKNOWN;
 
-    if (is_arabic_glyph_vowel (glyph_value)){  /* is vowel */
-        ch_type = MCHAR_TYPE_VOWEL;
+    if (is_arabic_char_vowel (chv)) {  /* is vowel */
+        ch_type = ACHAR_BASIC_VOWEL;
     }
     else{
-        ch_type = sb_glyph_type (glyph_value);
+        ch_type = sb_char_type (chv);
     }
 
     return ch_type;
 }
 
-static Uint32 __mg_iso8859_68x_type[] = {
-    /*0x00~0x0f*/ 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_SS,  BIDI_TYPE_BS,  BIDI_TYPE_SS, 
+static BidiType __mg_iso8859_6_bidi_char_type_map[] = {
+#if 0
+    /*0x00~0x0f*/
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_SS,  BIDI_TYPE_BS,  BIDI_TYPE_SS,
     BIDI_TYPE_WS,  BIDI_TYPE_BS,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
 
-    /*0x10~0x1f*/  
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
-    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN, 
+    /*0x10~0x1f*/
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
+    BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,  BIDI_TYPE_BN,
     BIDI_TYPE_BS,  BIDI_TYPE_BS,  BIDI_TYPE_BS,  BIDI_TYPE_SS,
 
-    /*0x20~0x2f*/  
-    BIDI_TYPE_WS,  BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ET, 
-    BIDI_TYPE_ET,  BIDI_TYPE_ET,  BIDI_TYPE_ON,  BIDI_TYPE_ON, 
-    BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ES, 
+    /*0x20~0x2f*/
+    BIDI_TYPE_WS,  BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ET,
+    BIDI_TYPE_ET,  BIDI_TYPE_ET,  BIDI_TYPE_ON,  BIDI_TYPE_ON,
+    BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ES,
     BIDI_TYPE_CS,  BIDI_TYPE_ES,  BIDI_TYPE_CS,  BIDI_TYPE_CS,
 
-    /*0x30~0x3f*/  
-    BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_EN, 
-    BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_EN, 
-    BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_CS,  BIDI_TYPE_ON, 
+    /*0x30~0x3f*/
+    BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_EN,
+    BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_EN,
+    BIDI_TYPE_EN,  BIDI_TYPE_EN,  BIDI_TYPE_CS,  BIDI_TYPE_ON,
     BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,
 
-    /*0x40~0x4f*/  
+    /*0x40~0x4f*/
     BIDI_TYPE_ON,  BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
 
-    /*0x50~0x6f*/  
+    /*0x50~0x6f*/
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
-    BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_ON, 
+    BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_ON,
     BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,
-    /*0x60~0x6f*/  
+
+    /*0x60~0x6f*/
     BIDI_TYPE_ON,  BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
 
-    /*0x70~0x7f*/  
+    /*0x70~0x7f*/
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
     BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR,
-    BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_ON, 
+    BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_LTR, BIDI_TYPE_ON,
     BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_ON,  BIDI_TYPE_BN,
+#endif
 
-    /*0x80~0x8f*/  
-    BIDI_TYPE_ON,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-   
-    /*0x90~0x9f*/  
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
+    /*0x80~0x8f*/
+    BIDI_TYPE_ON,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
 
-    /*0xa0~0xaf*/  
+    /*0x90~0x9f*/
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+
+    /*0xa0~0xaf*/
     BIDI_TYPE_WS,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_ON, 
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_ON,
     BIDI_TYPE_NSM, BIDI_TYPE_NSM, BIDI_TYPE_NSM, BIDI_TYPE_NSM,
     BIDI_TYPE_NSM, BIDI_TYPE_NSM, BIDI_TYPE_NSM, BIDI_TYPE_NSM,
 
-    /*0xb0~0xbf*/  
-    BIDI_TYPE_BN,  BIDI_TYPE_AN,  BIDI_TYPE_AN,  BIDI_TYPE_AN, 
-    BIDI_TYPE_AN,  BIDI_TYPE_AN,  BIDI_TYPE_AN,  BIDI_TYPE_AN, 
-    BIDI_TYPE_AN,  BIDI_TYPE_AN,  BIDI_TYPE_CS,  BIDI_TYPE_CS, 
+    /*0xb0~0xbf*/
+    BIDI_TYPE_BN,  BIDI_TYPE_AN,  BIDI_TYPE_AN,  BIDI_TYPE_AN,
+    BIDI_TYPE_AN,  BIDI_TYPE_AN,  BIDI_TYPE_AN,  BIDI_TYPE_AN,
+    BIDI_TYPE_AN,  BIDI_TYPE_AN,  BIDI_TYPE_CS,  BIDI_TYPE_CS,
     BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_CS,
 
-    /*0xc0~0xcf*/  
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
+    /*0xc0~0xcf*/
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
 
-    /*0xd0~0xdf*/  
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
+    /*0xd0~0xdf*/
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
 
-    /*0xe0~0xef*/  
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_ON, 
+    /*0xe0~0xef*/
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_ON,
 
     /*0xf0~0xff*/
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_ON, 
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_ON,
 
-    /*0x100~0x10f*/  
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
+    /*0x100~0x10f*/
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
 
-    /*0x110~0x11f*/  
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
+    /*0x110~0x11f*/
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
 
-    /*0x120~0x12f*/  
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
+    /*0x120~0x12f*/
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
 
-    /*0x130~0x133*/  
-    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL, 
+    /*0x130~0x133*/
+    BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,  BIDI_TYPE_AL,
 };
 
-static unsigned int iso8859_6_bidi_glyph_type (Glyph32 glyph_value)
+static BidiType iso8859_6_bidi_char_type (Achar32 chv)
 {
-    return __mg_iso8859_68x_type [REAL_GLYPH(glyph_value)];
+    chv = REAL_ACHAR(chv);
+    if (chv > 0x7F)
+        return (BidiType)__mg_iso8859_6_bidi_char_type_map[chv - 0x80];
+    else
+        return (BidiType)__mg_iso8859_1_bidi_char_type_map[chv];
 }
 
 static int get_table_index(Uint8 c)
@@ -652,7 +661,11 @@ static int get_next_char(const unsigned char* mchar, int len)
     return next_char;
 }
 
-Glyph32 iso8859_6_char_glyph_value (const unsigned char* prev_mchar, int prev_len, const unsigned char* mchar, int len)
+#ifndef _DEBUG
+static
+#endif
+Achar32 iso8859_6_get_char_value (const unsigned char* prev_mchar,
+        int prev_len, const unsigned char* mchar, int len)
 {
     BOOL next_affects_joining = FALSE, prev_affects_joining = FALSE;
     int char_index, prev_index;
@@ -665,28 +678,28 @@ Glyph32 iso8859_6_char_glyph_value (const unsigned char* prev_mchar, int prev_le
 
     char_index = get_table_index(*mchar);
 
-    /*current glyph has no transfiguration and has no ligature*/
-    if (char_index < 0 && !ISARABIC_PUNC(*mchar) 
+    /*current chv has no transfiguration and has no ligature*/
+    if (char_index < 0 && !ISARABIC_PUNC(*mchar)
         && !ISARABIC_VOWEL(*mchar) && !(*mchar == TADWEEL)) {
         return *mchar;
     }
 
-    if(prev_mchar){
+    if (prev_mchar) {
         prev_index = get_table_index(*prev_mchar);
-        prev_affects_joining = ( prev_index >= 0 || is_char_transparent(*prev_mchar)) && (shape_info[prev_index].medial);
+        prev_affects_joining = (prev_index >= 0 || is_char_transparent(*prev_mchar)) && (shape_info[prev_index].medial);
         // NUV prev_char = *prev_mchar;
         /*houhh 20080505, check if ligature. */
         if(prev_affects_joining) {
             ligature = get_ligature(prev_mchar, prev_len, 1, &ignore);
-            if(ligature > 0) 
-                prev_affects_joining = 0; 
+            if(ligature > 0)
+                prev_affects_joining = 0;
         }
     }
 
     /* processing ligature first.*/
     ligature = get_ligature(mchar, len, prev_affects_joining, &ignore);
 
-    if (ligature > 0) 
+    if (ligature > 0)
         return ligature;
 
     /* if not ligature char, get it's relative shape from shape_info table.*/
@@ -698,27 +711,27 @@ Glyph32 iso8859_6_char_glyph_value (const unsigned char* prev_mchar, int prev_le
         return shape_info[char_index].isolated;
     }
     /* 2.only next char affect，if has Initial，return Initial; else return Isolated */
-    else if ((!prev_affects_joining) && (next_affects_joining)) { 
+    else if ((!prev_affects_joining) && (next_affects_joining)) {
         initial = shape_info[char_index].initial;
-        if (initial) 
+        if (initial)
             return initial;
-        else 
-            return shape_info[char_index].isolated;  
-    } 
-    /* 3.prev and next char affect all，if has Medial， return Medial; else Isolated */
-    else if ((prev_affects_joining) && (next_affects_joining)) { 
-        medial = shape_info[char_index].medial;
-        if (medial) 
-            return medial;
-        else 
+        else
             return shape_info[char_index].isolated;
-    } 
+    }
+    /* 3.prev and next char affect all，if has Medial， return Medial; else Isolated */
+    else if ((prev_affects_joining) && (next_affects_joining)) {
+        medial = shape_info[char_index].medial;
+        if (medial)
+            return medial;
+        else
+            return shape_info[char_index].isolated;
+    }
     /* 4.only prev char affect，if has Final, return Final; else Isolated */
-    else if ((prev_affects_joining) && (!next_affects_joining)) { 
+    else if ((prev_affects_joining) && (!next_affects_joining)) {
         final = shape_info[char_index].final;
         if (final)
             return final;
-        else 
+        else
             return shape_info[char_index].isolated;
     }
 
@@ -760,65 +773,65 @@ static const unsigned char* iso8859_6_get_next_word (const unsigned char* mstr,
                 word_info->len++;
         }
     }
-            
+
     return mstr + word_info->len + word_info->nr_delimiters;
 
     //return sb_get_next_word(mstr, mstrlen, word_info);
 }
 
-/*if cur_len>1, search ligature shape, 
+/*if cur_len>1, search ligature shape,
  * else search letter or phonetic symbol shape*/
-static Glyph32 iso8859_6_glyph_shape (const unsigned char* cur_mchar, 
+static Achar32 iso8859_6_get_shaped_char_value (const unsigned char* cur_mchar,
         int cur_len, int shape_type)
 {
-    Glyph32 glyph_value = -1;
+    Achar32 chv = -1;
     int ignore;
     int index;
 
     if (cur_len > 1)
     {
-        if (shape_type == GLYPH_ISOLATED)
-            glyph_value = get_ligature (cur_mchar, cur_len, FALSE, &ignore);
-        else if (shape_type != GLYPH_INITIAL) {
+        if (shape_type == ACHAR_ISOLATED)
+            chv = get_ligature (cur_mchar, cur_len, FALSE, &ignore);
+        else if (shape_type != ACHAR_INITIAL) {
             /* LAM+ALEF+HAMAZ+MADDA ligature. */
             if (*cur_mchar == LAM)
-                glyph_value = fontset_68x_get_ligature_glyph(*(cur_mchar+1), TRUE, &ignore);
+                chv = fontset_68x_get_ligature_char(*(cur_mchar+1), TRUE, &ignore);
         }
     }
 
-    if (glyph_value == -1 || glyph_value == 0) {
+    if (chv == -1 || chv == 0) {
         if (ISARABIC_VOWEL(*cur_mchar)){
-            glyph_value = fontset_68x_get_vowel_glyph(*cur_mchar);
+            chv = fontset_68x_get_vowel_char(*cur_mchar);
         }
 
-        if (glyph_value == 0 || glyph_value == -1) {
+        if (chv == 0 || chv == -1) {
             index = get_table_index(*cur_mchar);
             if (index >=0)
             {
                 switch (shape_type) {
-                    case GLYPH_ISOLATED:
-                        glyph_value = shape_info[index].isolated;
+                    case ACHAR_ISOLATED:
+                        chv = shape_info[index].isolated;
                         break;
-                    case GLYPH_FINAL:
-                        glyph_value = shape_info[index].final;
+                    case ACHAR_FINAL:
+                        chv = shape_info[index].final;
                         break;
-                    case GLYPH_INITIAL:
-                        glyph_value = shape_info[index].initial;
+                    case ACHAR_INITIAL:
+                        chv = shape_info[index].initial;
                         break;
-                    case GLYPH_MEDIAL:
-                        glyph_value = shape_info[index].medial;
+                    case ACHAR_MEDIAL:
+                        chv = shape_info[index].medial;
                         break;
                 }
             }
             else
-                glyph_value = *cur_mchar;
+                chv = *cur_mchar;
         }
     }
 
-    if (glyph_value == 0) 
-        glyph_value =-1;
+    if (chv == 0)
+        chv =-1;
 
-    return glyph_value;
+    return chv;
 }
 
 static const BIDICHAR_MIRROR_MAP __mg_iso8859_68x_mirror_table [] =
@@ -835,10 +848,10 @@ static const BIDICHAR_MIRROR_MAP __mg_iso8859_68x_mirror_table [] =
 //  {0x00BB, 0x00AB}
 };
 
-static BOOL iso8859_6_bidi_mirror_glyph (Glyph32 glyph, Glyph32* mirrored)
+static BOOL iso8859_6_bidi_mirror_char (Achar32 chv, Achar32* mirrored)
 {
-    return get_mirror_glyph (__mg_iso8859_68x_mirror_table,
-            TABLESIZE (__mg_iso8859_68x_mirror_table), glyph, mirrored);
+    return get_mirror_char (__mg_iso8859_68x_mirror_table,
+            TABLESIZE (__mg_iso8859_68x_mirror_table), chv, mirrored);
 }
 
 static CHARSETOPS CharsetOps_iso8859_6 = {
@@ -847,16 +860,16 @@ static CHARSETOPS CharsetOps_iso8859_6 = {
     FONT_CHARSET_ISO8859_6,
     0,
     iso8859_6_len_first_char,
-    iso8859_6_char_glyph_value,
-    iso8859_6_glyph_shape,
-    iso8859_6_glyph_type,
+    iso8859_6_get_char_value,
+    iso8859_6_get_shaped_char_value,
+    iso8859_6_char_type,
     sb_nr_chars_in_str,
     iso8859_6_is_this_charset,
     sb_len_first_substr,
     iso8859_6_get_next_word,
     sb_pos_first_char,
-    iso8859_6_bidi_glyph_type,
-    iso8859_6_bidi_mirror_glyph,
+    iso8859_6_bidi_char_type,
+    iso8859_6_bidi_mirror_char,
 #ifdef _MGCHARSET_UNICODE
     iso8859_6_conv_to_uc32,
     iso8859_6_conv_from_uc32
@@ -864,14 +877,14 @@ static CHARSETOPS CharsetOps_iso8859_6 = {
 };
 
 #ifdef _DEBUG
-int test_glyph_value (int char_index, Glyph32 glyph_value)
+int iso8859_6_test_chv (int char_index, Achar32 chv)
 {
     int i = 0;
     for (i = 0; i<SHAPENUMBER; i++) {
-        if (shape_info[i].isolated == glyph_value ||
-            shape_info[i].initial == glyph_value ||
-            shape_info[i].medial == glyph_value ||
-            shape_info[i].final == glyph_value )
+        if (shape_info[i].isolated == chv ||
+            shape_info[i].initial == chv ||
+            shape_info[i].medial == chv ||
+            shape_info[i].final == chv )
             if( char_index == i)
                 return 1;
     }

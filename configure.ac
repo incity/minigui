@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.60)
-AC_INIT(libminigui, 3.2.0)
+AC_INIT(libminigui, 4.0.0)
 AC_CONFIG_SRCDIR(src/main/main.c)
 
 dnl Set various version strings - taken gratefully from the SDL sources
@@ -14,11 +14,11 @@ dnl Set various version strings - taken gratefully from the SDL sources
 # if backwards compatibility has been broken,
 # set MINIGUI_BINARY_AGE and MINIGUI_INTERFACE_AGE to 0.
 #
-MINIGUI_MAJOR_VERSION=3
-MINIGUI_MINOR_VERSION=2
-MINIGUI_MICRO_VERSION=1
+MINIGUI_MAJOR_VERSION=4
+MINIGUI_MINOR_VERSION=0
+MINIGUI_MICRO_VERSION=0
 MINIGUI_INTERFACE_AGE=0
-MINIGUI_BINARY_AGE=1
+MINIGUI_BINARY_AGE=0
 MINIGUI_VERSION=$MINIGUI_MAJOR_VERSION.$MINIGUI_MINOR_VERSION.$MINIGUI_MICRO_VERSION
 
 AC_SUBST(MINIGUI_MAJOR_VERSION)
@@ -76,7 +76,8 @@ AC_FUNC_ALLOCA
 AC_FUNC_MEMCMP
 AC_FUNC_MMAP
 AC_FUNC_VPRINTF
-AC_CHECK_FUNCS(time mktime localtime strdup strcasecmp strncasecmp strerror setlocale getpt)
+AC_CHECK_FUNCS(time mktime localtime strdup strcasecmp strncasecmp strerror setlocale)
+AC_CHECK_FUNCS(posix_memalign memalign valloc)
 
 dnl ========================================================================
 dnl User selectable options
@@ -164,7 +165,8 @@ build_incorefont_times="yes"
 
 build_sef_support="no"
 build_qpf_support="no"
-use_ttf_lib="ft2"
+build_ttf_support="yes"
+build_complex_scripts="yes"
 build_ttfcache_support="yes"
 build_bmpf_support="yes"
 
@@ -193,6 +195,7 @@ build_eucjp_support="no"
 build_shiftjis_support="no"
 
 build_unicode_support="yes"
+build_full_unicode="yes"
 
 dnl Keyboard layout specific options
 use_kbd_hebrewpc="no"
@@ -389,7 +392,7 @@ AC_ARG_ENABLE(netial,
 build_net_ial_engine=$enableval)
 
 AC_ARG_ENABLE(cisco_touchpad_ial,
-[  --enable-cisco_touchpad_ial	build the IAL engine for Cisco Touchpad <default=no>],
+[  --enable-cisco_touchpad_ial    build the IAL engine for Cisco Touchpad <default=no>],
 build_cisco_touchpad_ial_engine=$enableval)
 
 AC_ARG_ENABLE(mstar_ial,
@@ -536,13 +539,17 @@ AC_ARG_ENABLE(sefsupport,
 [  --enable-sefsupport      build support for koxomo scripteasy (SEF) <default=no>],
 build_sef_support=$enableval)
 
-AC_ARG_WITH(ttfsupport,
-[  --with-ttfsupport=ft1/ft2/none   How to support TrueType font (FreeType 1/FreeType 2/None) <default=none>],
-use_ttf_lib=$withval)
+AC_ARG_ENABLE(ttfsupport,
+[  --enable-ttfsupport      build support for TrueType/OpenType (needs FreeType2 library) <default=yes>],
+build_ttf_support=$enableval)
 
 AC_ARG_ENABLE(ttfcache,
-[  --enable-ttfcache        include ttf cache support <default=no>],
+[  --enable-ttfcache        build ttf cache support <default=no>],
 build_ttfcache_support=$enableval)
+
+AC_ARG_ENABLE(complexscripts,
+[  --enable-complexscripts  build support for complex scripts (needs HarfBuzz library) <default=yes>],
+build_complex_scripts=$enableval)
 
 AC_ARG_ENABLE(bmpfsupport,
 [  --enable-bmpfsupport     build support for Bitmap Font (bmpf) <default=yes>],
@@ -635,6 +642,10 @@ build_shiftjis_support=$enableval)
 AC_ARG_ENABLE(unicodesupport,
 [  --enable-unicodesupport  include UNICODE (ISO-10646-1 and UTF-8 encoding) support <default=yes>],
 build_unicode_support=$enableval)
+
+AC_ARG_ENABLE(fullunicode,
+[  --enable-fullunicode     include support for full UNICODE code points <default=yes>],
+build_full_unicode=$enableval)
 
 AC_ARG_ENABLE(kbdhebrewpc,
 [  --enable-kbdhebrewpc     include keyboard layout for Hebrew PC keyboard <default=no>],
@@ -834,7 +845,7 @@ CheckFBCON()
     AC_ARG_ENABLE(videofbcon,
 [  --enable-videofbcon      include FrameBuffer console NEWGAL engine <default=yes>],
     enable_video_fbcon=$enableval)
-    if test x$enable_video_fbcon = xyes; then
+    if test "x$enable_video_fbcon" = "xyes"; then
         AC_MSG_CHECKING(for FrameBuffer console support)
         video_fbcon=no
         AC_TRY_COMPILE([
@@ -846,7 +857,7 @@ CheckFBCON()
         video_fbcon=yes
         ])
         AC_MSG_RESULT($video_fbcon)
-        if test x$video_fbcon = xyes; then
+        if test "x$video_fbcon" = "xyes"; then
             AC_DEFINE(_MGGAL_FBCON, 1,
                 [Define if include FrameBuffer console NEWGAL engine])
             VIDEO_SUBDIRS="$VIDEO_SUBDIRS fbcon"
@@ -856,7 +867,7 @@ CheckFBCON()
             AC_CHECK_LIB(pciaccess, pci_system_init,
                 DEP_LIBS="$DEP_LIBS -lpciaccess", have_pciaccess="no")
 
-            if test x$have_pciaccess = xyes; then
+            if test "x$have_pciaccess" = "xyes"; then
                 AC_DEFINE(_MGHAVE_PCIACCESS, 1,
                 [Define if PCIAccess lib is available])
                 LDFLAGS="$LDFLAGS -lpciaccess"
@@ -892,21 +903,21 @@ CheckXVFB()
 [  --enable-videortosxvfb   include RTOS Virtual FrameBuffer NEWGAL engine <default=no>. Please disable pcxvfb to enable rtosxvfb],
     enable_video_rtos_xvfb=$enableval)
 
-	if test "x$enable_video_pc_xvfb" = "xyes"; then
-dnl	CheckPCXVFB
+    if test "x$enable_video_pc_xvfb" = "xyes"; then
+dnl    CheckPCXVFB
         AC_DEFINE(_MGGAL_PCXVFB, 1,
                 [Define if include PC Virtual FrameBuffer NEWGAL engine])
         VIDEO_SUBDIRS="$VIDEO_SUBDIRS pcxvfb"
         VIDEO_DRIVERS="$VIDEO_DRIVERS pcxvfb/libvideo_pcxvfb.la"
-	else 	
-		if test "x$enable_video_rtos_xvfb" = "xyes"; then
-dnl	CheckRTOSXVFB
+    else
+        if test "x$enable_video_rtos_xvfb" = "xyes"; then
+dnl    CheckRTOSXVFB
         AC_DEFINE(_MGGAL_RTOSXVFB, 1,
                 [Define if include RTOS Virtual FrameBuffer NEWGAL engine])
         VIDEO_SUBDIRS="$VIDEO_SUBDIRS rtos_xvfb"
         VIDEO_DRIVERS="$VIDEO_DRIVERS rtos_xvfb/libvideo_rtos_xvfb.la"
-		fi
-	fi
+        fi
+    fi
 }
 
 
@@ -1099,7 +1110,7 @@ CheckDirectFBVideo()
 [  --enable-videodfb        include NEWGAL engine for DirectFB <default=no>],
     enable_video_dfb=$enableval)
 
-    if test x$enable_video_dfb = xyes; then
+    if test "x$enable_video_dfb" = "xyes"; then
         AC_MSG_CHECKING(for DirectFB support)
         video_dfb=no
         AC_TRY_COMPILE([
@@ -1109,7 +1120,7 @@ CheckDirectFBVideo()
         video_dfb=yes
         ])
         AC_MSG_RESULT($video_dfb)
-        if test x$video_dfb = xyes; then
+        if test "x$video_dfb" = "xyes"; then
             AC_DEFINE(_MGGAL_DFB, 1,
                 [Define if include NEWGAL engine for DirectFB])
             VIDEO_SUBDIRS="$VIDEO_SUBDIRS dfb"
@@ -1121,7 +1132,7 @@ CheckDirectFBVideo()
 [  --enable-videost7167     include NEWGAL engine for ST7167 on DirectFB <default=no>],
     enable_video_dfb_st7167=$enableval)
 
-            if test x$enable_video_dfb_st7167 = xyes; then
+            if test "x$enable_video_dfb_st7167" = "xyes"; then
                 AC_DEFINE(_MGGAL_DFB_ST7167, 1,
                     [Define if include ST7167 subdriver for NEWGAL engine of DirectFB])
             fi
@@ -1337,11 +1348,29 @@ if test "x$build_jpg_support" != "xno"; then
 fi
 
 dnl Check for PNG library.
+libpng_version="no"
 if test "x$build_png_support" != "xno"; then
-    AC_CHECK_LIB(png, png_check_sig,
-        DEP_LIBS="$DEP_LIBS -lpng",
-        build_png_support=no, -lz -lm)
+    AC_CHECK_LIB(png12, png_check_sig,
+        libpng_version="12",
+        libpng_version="no", -lz -lm)
+    if test "x$libpng_version" == "xno"; then
+        AC_CHECK_LIB(png16, png_sig_cmp,
+            libpng_version="16",
+            libpng_version="no", -lz -lm)
+    fi
 fi
+
+case "$libpng_version" in
+    12)
+        DEP_LIBS="$DEP_LIBS -lpng12"
+    ;;
+    16)
+        DEP_LIBS="$DEP_LIBS -lpng16"
+    ;;
+    *)
+        build_png_support="no"
+    ;;
+esac
 
 AC_DEFINE_UNQUOTED(MINIGUI_MAJOR_VERSION, $MINIGUI_MAJOR_VERSION,
             [Major version of MiniGUI])
@@ -1509,17 +1538,21 @@ dnl         ;;
 dnl esac
 
 AC_ARG_WITH(targetname,
-  [  --with-targetname=unknown/customer/fmsoft/mstudio/stb810/vfanvil/vxi386/qvfb/fbcon/mx21/monaco/c33l05/bfin/vxppc/
+  [  --with-targetname=unknown/external/fmsoft/mstudio/stb810/vfanvil/vxi386/qvfb/fbcon/mx21/monaco/c33l05/bfin/vxppc/
                         S3C6410/S3C2440/S3C2410/hi3560a     Define the target board name])
 
 case "$with_targetname" in
+  external)
+    AC_DEFINE(__TARGET_EXTERNAL__, 1,
+        [Define for targets which use GAL and/or IAL engines and define the interfaces externally])
+   ;;
   fmsoft)
     AC_DEFINE(__TARGET_FMSOFT__, 1,
-	    [Define for FMSoft internal use])
+        [Define for FMSoft internal use])
    ;;
   mstudio)
     AC_DEFINE(__TARGET_MSTUDIO__, 1,
-	    [Define for FMSoft miniStudio])
+        [Define for FMSoft miniStudio])
    ;;
   stb810)
     AC_DEFINE(__TARGET_STB810__, 1,
@@ -1547,11 +1580,11 @@ case "$with_targetname" in
     ;;
   bfin)
     AC_DEFINE(__TARGET_BLACKFIN__, 1,
-	    [Define for Blackfin run uClinux])
+        [Define for Blackfin run uClinux])
    ;;
   c33l05)
     AC_DEFINE(__TARGET_C33L05__, 1,
-	    [Define for EPSON C33L05 (axLinux)])
+        [Define for EPSON C33L05 (axLinux)])
    ;;
   S3C6410)
     CFLAGS="$CFLAGS -D_WITH_TARGET_S3C6410"
@@ -1977,30 +2010,29 @@ if test "x$build_upf_support" = "xyes"; then
 fi
 
 dnl Check FreeType lib
-case "$use_ttf_lib" in
-  ft1)
-dnl Check for FreeType1 library
-    AC_CHECK_LIB(ttf, TT_FreeType_Version,
-            DEP_LIBS="$DEP_LIBS -lttf",
-            use_ttf_lib="none")
-    ;;
-  ft2)
-dnl Check for FreeType2 library
+if test "x$build_ttf_support" = "xyes"; then
+    dnl Check for FreeType2 library
     AC_CHECK_LIB(freetype, FT_Library_Version,
         DEP_LIBS="$DEP_LIBS -lfreetype",
-        use_ttf_lib="none")
-    ;;
-esac
+        build_ttf_support="no")
+fi
 
-dnl Dealing with TTF cache size 
-case "$use_ttf_lib" in
-    ft1|ft2)
+dnl Dealing with TTF cache size
+if test "x$build_ttf_support" = "xyes"; then
+
+    if test "x$build_complex_scripts" = "xyes"; then
+        dnl Check for HarfBuzz library
+        AC_CHECK_LIB(harfbuzz, hb_version,
+            DEP_LIBS="$DEP_LIBS -lharfbuzzex",
+            build_complex_scripts="no")
+    fi
+
     if test "x$build_ttfcache_support" = "xyes"; then
         AC_DEFINE(_MGFONT_TTF_CACHE, 1,
                   [Define if include ttf cache])
 
         AC_ARG_WITH(ttfcachesize,
-                    [  --with-ttfcachesize=[64/128/256/512/1024]])
+                    [  --with-ttfcachesize=[64/128/256/512/1024/2048]])
 
         case "$with_ttfcachesize" in
             64)
@@ -2023,78 +2055,84 @@ case "$use_ttf_lib" in
                 AC_DEFINE(_MGTTF_CACHE_SIZE, 1024,
                           [Define if compile max ttf cahce size for 1024k])
             ;;
+            2048)
+                AC_DEFINE(_MGTTF_CACHE_SIZE, 2048,
+                          [Define if compile max ttf cahce size for 2048k])
+            ;;
             *)
-                AC_DEFINE(_MGTTF_CACHE_SIZE, 256,
-                          [Define if compile max ttf cahce size for 256k])
+                AC_DEFINE(_MGTTF_CACHE_SIZE, 1024,
+                          [Define if compile max ttf cahce size for 1024k (default value)])
             ;;
         esac
 
         AC_ARG_WITH(ttfcachenum,
-                    [  --with-mttfcachenum=[10/20/40]])
-        case "$with_mttfcachenum" in
-            10)
-                AC_DEFINE(_MGMAX_TTF_CACHE, 10,
-                          [Define if compile max ttf cahce number for 10])
+                    [  --with-ttfcachenum=[16/32/64/128]])
+        case "$with_ttfcachenum" in
+            16)
+                AC_DEFINE(_MGMAX_TTF_CACHE, 16,
+                          [Define if compile max ttf cahce number for 16])
             ;;
-            20)
-                AC_DEFINE(_MGMAX_TTF_CACHE, 20,
-                          [Define if compile max ttf cahce number for 20])
+            32)
+                AC_DEFINE(_MGMAX_TTF_CACHE, 32,
+                          [Define if compile max ttf cahce number for 32])
             ;;
-            40)
-                AC_DEFINE(_MGMAX_TTF_CACHE, 40,
-                          [Define if compile max ttf cahce number for 40])
+            64)
+                AC_DEFINE(_MGMAX_TTF_CACHE, 64,
+                          [Define if compile max ttf cahce number for 64])
+            ;;
+            128)
+                AC_DEFINE(_MGMAX_TTF_CACHE, 128,
+                          [Define if compile max ttf cahce number for 128])
             ;;
             *)
-                AC_DEFINE(_MGMAX_TTF_CACHE, 10,
-                          [Define if compile max ttf cahce number for 10 (default value)])
+                AC_DEFINE(_MGMAX_TTF_CACHE, 32,
+                          [Define if compile max ttf cahce number for 32 (default value)])
             ;;
         esac
     fi
-    ;;
-esac
+fi
 
 dnl Dealing with CFLAGS and LDFLAGS
-case "$use_ttf_lib" in
-    ft1)
-        build_unicode_support="yes"
+if test "x$build_complex_scripts" = "xyes"; then
+    build_ttf_support="yes"
+    AC_DEFINE(_MGCOMPLEX_SCRIPTS, 1,
+         [Define if support complex scripts based on HarfBuzz])
 
-        AC_DEFINE(_MGFONT_TTF, 1,
-                 [Define if support TrueType font])
+    AC_ARG_WITH(hb_includes,
+[  --with-hb-includes=DIR       where the HarfBuzz includes are])
 
-        AC_ARG_WITH(ft1_includes,
-               [  --with-ft1-includes=DIR    where the FreeType1 includes are])
+    if test "x$with_hb_includes" = "x"; then
+        HB_INC_DIR="-I/usr/local/include/harfbuzz"
+    else
+        HB_INC_DIR="-I$with_hb_includes"
+    fi
 
-        if test "x$with_ft1_includes" = "x"; then
-            FT1_INC_DIR="-I/usr/include/freetype1"
-        else
-            FT1_INC_DIR="-I$with_ft1_includes"
-        fi
+    AC_SUBST(HB_INC_DIR)
+fi
 
-        AC_SUBST(FT1_INC_DIR)
-    ;;
-    ft2)
-        build_unicode_support="yes"
-        AC_DEFINE(_MGFONT_FT2, 1,
-             [Define if support TrueType font based on FreeType2])
+if test "x$build_ttf_support" = "xyes"; then
+    build_unicode_support="yes"
+    AC_DEFINE(_MGFONT_FT2, 1,
+         [Define if support TrueType/OpenType fonts based on FreeType2])
 
-        AC_ARG_WITH(ft2_includes,
-               [  --with-ft2-includes=DIR    where the FreeType2 includes are])
+    with_ft2_includes=""
+    AC_ARG_WITH(ft2_includes,
+[  --with-ft2-includes=DIR      where the FreeType2 includes are],
+        with_ft2_includes=$withval)
 
-        if test "x$with_ft2_includes" = "x"; then
-            FT2_INC_DIR="-I/usr/include/freetype2"
-        else
-            FT2_INC_DIR="-I$with_ft2_includes"
-        fi
+    if test "x$with_ft2_includes" = "x"; then
+        FT2_INC_DIR="-I/usr/include/freetype2"
+    else
+        FT2_INC_DIR="-I$with_ft2_includes"
+    fi
 
-        AC_SUBST(FT2_INC_DIR)
-    ;;
-esac
+    AC_SUBST(FT2_INC_DIR)
+fi
 
 if test "x$build_bmpf_support" = "xyes"; then
     AC_DEFINE(_MGFONT_BMPF, 1,
             [Define if support Bitmap fonts])
 fi
-
 
 if test "x$build_latin2_support" = "xyes"; then
     AC_DEFINE(_MGCHARSET_LATIN2, 1,
@@ -2206,6 +2244,11 @@ if test "x$build_unicode_support" = "xyes"; then
             [Define if support UNICODE])
 fi
 
+if test "x$build_full_unicode" = "xyes"; then
+    AC_DEFINE(_MGCHARSET_UNICODE_FULL, 1,
+            [Define if support full UNICODE code points])
+fi
+
 if test "x$use_kbd_hebrewpc" = "xyes"; then
     AC_DEFINE(_MGKBDLAYOUT_HEBREWPC, 1,
             [Define if use the Hebrew PC keyboard layout])
@@ -2286,6 +2329,8 @@ fi
 if test "x$build_png_support" = "xyes"; then
     AC_DEFINE(_MGIMAGE_PNG, 1,
             [Define if support PNG bmp file format])
+    AC_DEFINE_UNQUOTED(_MGLIBPNG_VER, $libpng_version,
+            [Define version of libpng])
 fi
 
 if test "x$build_menu" = "xyes"; then
@@ -2430,8 +2475,8 @@ fi
 if test "x$build_ctrl_textedit_new" = "xyes"; then
     AC_DEFINE(_MGCTRL_TEXTEDIT, 1,
             [Define if include TEXTEDIT control])
-	AC_DEFINE(_MGCTRL_TEXTEDIT_USE_NEW_IMPL, 1,
-			[Define if use new implementation of TEXTEDIT control])
+    AC_DEFINE(_MGCTRL_TEXTEDIT_USE_NEW_IMPL, 1,
+            [Define if use new implementation of TEXTEDIT control])
 fi
 
 if test "x$build_splash" = "xyes"; then
@@ -2459,25 +2504,31 @@ dnl define _GNU_SOURCE for pthread_rwlock_t
 CFLAGS="$CFLAGS -D_GNU_SOURCE"
 
 if test "x$devel_mode" = "xyes"; then
-    CPPFLAGS="$CPPFLAGS -D_DEBUG"
+    CPPFLAGS="$CPPFLAGS -DDEBUG"
     if test "x$detail_debug" = "xyes"; then
-        CPPFLAGS="$CPPFLAGS -DDEBUG"
+        CPPFLAGS="$CPPFLAGS -D_DEBUG"
     fi
 
     if test "$ac_cv_prog_gcc" = "yes"; then
         CPPFLAGS="$CPPFLAGS -Wall -Werror"
     fi
+
+    AC_DEFINE(_MGDEVEL_MODE, 1,
+            [Define if developer mode enabled])
 else
     CPPFLAGS="$CPPFLAGS -DNDEBUG"
 fi
 
 if test "$ac_cv_prog_gcc" = "yes"; then
-    CFLAGS="$CFLAGS -O2 -Wstrict-prototypes -pipe"
+    CFLAGS="$CFLAGS -O2 -fmax-errors=10 -Wstrict-prototypes -pipe"
 fi
 
-if test "x$runtime_mode" = "xths"; then
-    DEP_LIBS="$DEP_LIBS -lpthread"
-fi
+#if test "x$runtime_mode" = "xths"; then
+#    DEP_LIBS="$DEP_LIBS -lpthread"
+#fi
+
+# Always link to pthread
+DEP_LIBS="$DEP_LIBS -lpthread"
 
 AC_SUBST(VIDEO_SUBDIRS)
 AC_SUBST(VIDEO_DRIVERS)

@@ -154,7 +154,7 @@ static void clear_glyph_tree (QPF_GLYPHTREE* tree)
     free (tree->more);
 }
 
-static void* load_font_data (const char* font_name, const char* file_name)
+static void* load_font_data (DEVFONT* devfont, const char* font_name, const char* file_name)
 {
     FILE* fp = NULL;
     uchar* data;
@@ -164,14 +164,14 @@ static void* load_font_data (const char* font_name, const char* file_name)
     qpf_info = (QPFINFO*) calloc (1, sizeof(QPFINFO));
 
     if (!(fp = fopen (file_name, "rb"))) {
-        _MG_PRINTF ("FONT>QPF: open file error: %s.\n",
+        _WRN_PRINTF ("FONT>QPF: open file error: %s.\n",
                 file_name);
         goto error;
     }
 
     file_size = get_opened_file_size (fp);
     if (file_size == 0) {
-        _MG_PRINTF ("FONT>QPF: empty font file: %s.\n",
+        _WRN_PRINTF ("FONT>QPF: empty font file: %s.\n",
                 file_name);
         goto error;
     }
@@ -180,14 +180,14 @@ static void* load_font_data (const char* font_name, const char* file_name)
 
     if ((qpf_info->height 
                 = fontGetHeightFromName (font_name)) == -1) {
-        _MG_PRINTF ("FONT>QPF: Invalid font name (height): %s.\n",
+        _WRN_PRINTF ("FONT>QPF: Invalid font name (height): %s.\n",
                 font_name);
         goto error;
     }
 
     if ((qpf_info->width 
                 = fontGetWidthFromName (font_name)) == -1) {
-        _MG_PRINTF ("FONT>QPF: Invalid font name (width): %s.\n",
+        _WRN_PRINTF ("FONT>QPF: Invalid font name (width): %s.\n",
                 font_name);
         goto error;
     }
@@ -222,7 +222,7 @@ error:
     return NULL;
 }
 
-static void unload_font_data (void* data)
+static void unload_font_data (DEVFONT* devfont, void* data)
 {
     QPFINFO* qpf_info = (QPFINFO*)data;
 
@@ -275,7 +275,7 @@ static unsigned char def_smooth_bitmap [] =
 static QPF_GLYPH def_glyph = {&def_metrics, def_bitmap};
 static QPF_GLYPH def_smooth_glyph = {&def_smooth_metrics, def_smooth_bitmap};
 
-static DWORD get_glyph_type (LOGFONT* logfont, DEVFONT* devfont)
+static DWORD get_glyph_bmptype (LOGFONT* logfont, DEVFONT* devfont)
 {
     if (QPFONT_INFO_P (devfont)->fm->flags & FLAG_MODE_SMOOTH)
         return DEVFONTGLYPHTYPE_GREYBMP;
@@ -302,7 +302,7 @@ static int get_font_height (LOGFONT* logfont, DEVFONT* devfont)
             * GET_DEVFONT_SCALE (logfont, devfont);
 }
 
-static int get_font_size (LOGFONT* logfont, DEVFONT* devfont, int expect)
+static int get_font_size (LOGFONT* logfont, DEVFONT* devfont, int expect, int df_slot)
 {
     int height = QPFONT_INFO_P (devfont)->fm->ascent + 
             QPFONT_INFO_P (devfont)->fm->descent;
@@ -311,7 +311,8 @@ static int get_font_size (LOGFONT* logfont, DEVFONT* devfont, int expect)
     if (logfont->style & FS_OTHER_AUTOSCALE)
         scale = font_GetBestScaleFactor (height, expect);
 
-    SET_DEVFONT_SCALE (logfont, devfont, scale);
+    if (df_slot >= 0 && df_slot < MAXNR_DEVFONTS)
+        SET_DEVFONT_SCALE (logfont, df_slot, scale);
 
     return height * scale;
 }
@@ -329,23 +330,24 @@ static int get_font_descent (LOGFONT* logfont, DEVFONT* devfont)
 }
 
 static const void* get_glyph_monobitmap (LOGFONT* logfont, DEVFONT* devfont,
-            const Glyph32 glyph_value, int* pitch, unsigned short* scale)
+            Glyph32 glyph_value, SIZE* sz, int* pitch, unsigned short* scale)
 {
     unsigned int uc16;
     QPF_GLYPH* glyph;
 
-    if(devfont->charset_ops->conv_to_uc32)
+    glyph_value = REAL_GLYPH(glyph_value);
+    if (devfont->charset_ops->conv_to_uc32)
         uc16 = (*devfont->charset_ops->conv_to_uc32) (glyph_value);
     else
         uc16 = glyph_value;
-    
+
     glyph = get_glyph (QPFONT_INFO_P (devfont)->tree, uc16);
 
     if (glyph == NULL) {
-        if (uc16 < 0x80 && logfont->sbc_devfont != devfont) {   /* ASCII */
+        if (uc16 < 0x80 && logfont->devfonts[0] != devfont) {   /* ASCII */
             unsigned char ascii_ch = uc16;
-            return logfont->sbc_devfont->font_ops->get_glyph_monobitmap (logfont,
-                            logfont->sbc_devfont, ascii_ch, pitch, scale);
+            return logfont->devfonts[0]->font_ops->get_glyph_monobitmap (logfont,
+                            logfont->devfonts[0], ascii_ch, sz, pitch, scale);
         }
         else
             glyph = &def_glyph;
@@ -365,11 +367,12 @@ static const void* get_glyph_monobitmap (LOGFONT* logfont, DEVFONT* devfont,
 }
 
 static const void* get_glyph_greybitmap (LOGFONT* logfont, DEVFONT* devfont,
-            Glyph32 glyph_value, int* pitch, unsigned short* scale)
+            Glyph32 glyph_value, SIZE* sz, int* pitch, unsigned short* scale)
 {
     unsigned int uc16;
     QPF_GLYPH* glyph;
 
+    glyph_value = REAL_GLYPH(glyph_value);
     if (scale)
         *scale = GET_DEVFONT_SCALE (logfont, devfont);
 
@@ -400,6 +403,7 @@ static int get_glyph_bbox (LOGFONT* logfont, DEVFONT* devfont,
     QPF_GLYPH* glyph;
     unsigned short scale = GET_DEVFONT_SCALE (logfont, devfont);
 
+    glyph_value = REAL_GLYPH(glyph_value);
     if(devfont->charset_ops->conv_to_uc32)
         uc16 = (*devfont->charset_ops->conv_to_uc32) (glyph_value);
     else
@@ -408,21 +412,21 @@ static int get_glyph_bbox (LOGFONT* logfont, DEVFONT* devfont,
     glyph = get_glyph (QPFONT_INFO_P (devfont)->tree, uc16);
 
     if (glyph == NULL) {
-        if (uc16 < 0x80 && logfont->sbc_devfont != devfont) {   /* ASCII */
+        if (uc16 < 0x80 && logfont->devfonts[0] != devfont) {   /* ASCII */
             unsigned char ascii_ch = uc16;
-            if (logfont->sbc_devfont->font_ops->get_glyph_bbox) {
-                return logfont->sbc_devfont->font_ops->get_glyph_bbox (logfont,
-                            logfont->sbc_devfont, ascii_ch,
+            if (logfont->devfonts[0]->font_ops->get_glyph_bbox) {
+                return logfont->devfonts[0]->font_ops->get_glyph_bbox (logfont,
+                            logfont->devfonts[0], ascii_ch,
                             px, py, pwidth, pheight);
             }
             else {
                 int width, height, ascent;
-                logfont->sbc_devfont->font_ops->get_glyph_advance 
-                        (logfont, logfont->sbc_devfont, glyph_value, &width, 0);
-                height = logfont->sbc_devfont->font_ops->get_font_height 
-                        (logfont, logfont->sbc_devfont);
-                ascent = logfont->sbc_devfont->font_ops->get_font_ascent
-                        (logfont, logfont->sbc_devfont);
+                logfont->devfonts[0]->font_ops->get_glyph_advance 
+                        (logfont, logfont->devfonts[0], glyph_value, &width, 0);
+                height = logfont->devfonts[0]->font_ops->get_font_height 
+                        (logfont, logfont->devfonts[0]);
+                ascent = logfont->devfonts[0]->font_ops->get_font_ascent
+                        (logfont, logfont->devfonts[0]);
 
                 if (pwidth) *pwidth = width;
                 if (pheight) *pheight = height;
@@ -452,6 +456,7 @@ static int get_glyph_advance (LOGFONT* logfont, DEVFONT* devfont,
     QPF_GLYPH* glyph;
     int advance;
 
+    glyph_value = REAL_GLYPH(glyph_value);
     if(devfont->charset_ops->conv_to_uc32)
         uc16 = (*devfont->charset_ops->conv_to_uc32) (glyph_value);
     else
@@ -460,11 +465,11 @@ static int get_glyph_advance (LOGFONT* logfont, DEVFONT* devfont,
     glyph = get_glyph (QPFONT_INFO_P (devfont)->tree, uc16);
 
     if (glyph == NULL) {
-        if (uc16 < 0x80 && logfont->sbc_devfont != devfont) {   /* ASCII */
+        if (uc16 < 0x80 && logfont->devfonts[0] != devfont) {   /* ASCII */
             unsigned char ascii_ch = uc16;
-            if (logfont->sbc_devfont->font_ops->get_glyph_advance) {
-                return logfont->sbc_devfont->font_ops->
-                        get_glyph_advance (logfont, logfont->sbc_devfont, 
+            if (logfont->devfonts[0]->font_ops->get_glyph_advance) {
+                return logfont->devfonts[0]->font_ops->
+                        get_glyph_advance (logfont, logfont->devfonts[0], 
                             ascii_ch, px, py);
             }
         }
@@ -473,7 +478,8 @@ static int get_glyph_advance (LOGFONT* logfont, DEVFONT* devfont,
     }
 
     advance = glyph->metrics->advance * GET_DEVFONT_SCALE (logfont, devfont);
-    *px += advance;
+    if (px)
+        *px += advance;
 
     return advance;
 }
@@ -482,9 +488,12 @@ static DEVFONT* new_instance (LOGFONT* logfont, DEVFONT* devfont,
                BOOL need_sbc_font)
 {
     if (QPFONT_INFO_P (devfont)->fm->flags & FLAG_MODE_SMOOTH) {
-        logfont->style &= ~FS_WEIGHT_SUBPIXEL;
-        logfont->style |=  FS_WEIGHT_BOOK;
-        logfont->style &= ~FS_WEIGHT_LIGHT;
+        logfont->style &= ~FS_RENDER_MASK;
+        logfont->style |=  FS_RENDER_GREY;
+    }
+    else {
+        logfont->style &= ~FS_RENDER_MASK;
+        logfont->style |=  FS_RENDER_MONO;
     }
 
     return devfont;
@@ -495,17 +504,18 @@ static BOOL is_glyph_existed (LOGFONT* logfont, DEVFONT* devfont, Glyph32 glyph_
     unsigned int uc16;
     QPF_GLYPH* glyph;
 
+    glyph_value = REAL_GLYPH(glyph_value);
     if(devfont->charset_ops->conv_to_uc32)
         uc16 = (*devfont->charset_ops->conv_to_uc32) (glyph_value);
     else
         uc16 = glyph_value;
-    
+
     glyph = get_glyph (QPFONT_INFO_P (devfont)->tree, uc16);
 
     if (glyph == NULL) {
-        if (uc16 < 0x80 && logfont->sbc_devfont != devfont)   /* ASCII */
-            return logfont->sbc_devfont->font_ops->is_glyph_existed (logfont,
-                                    logfont->sbc_devfont, glyph_value);
+        if (uc16 < 0x80 && logfont->devfonts[0] != devfont)   /* ASCII */
+            return logfont->devfonts[0]->font_ops->is_glyph_existed (logfont,
+                                    logfont->devfonts[0], glyph_value);
         else
             return FALSE;
     }
@@ -519,7 +529,7 @@ static int is_rotatable (LOGFONT* logfont, DEVFONT* devfont, int rot_desired)
 
 /**************************** Global data ************************************/
 FONTOPS __mg_qpf_ops = {
-    get_glyph_type,
+    get_glyph_bmptype,
     get_ave_width,
     get_max_width,
     get_font_height,

@@ -1,33 +1,33 @@
 /*
- *   This file is part of MiniGUI, a mature cross-platform windowing 
+ *   This file is part of MiniGUI, a mature cross-platform windowing
  *   and Graphics User Interface (GUI) support system for embedded systems
  *   and smart IoT devices.
- * 
+ *
  *   Copyright (C) 2002~2018, Beijing FMSoft Technologies Co., Ltd.
  *   Copyright (C) 1998~2002, WEI Yongming
- * 
+ *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- * 
+ *
  *   This program is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU General Public License for more details.
- * 
+ *
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  *   Or,
- * 
+ *
  *   As this program is a library, any link to this program must follow
  *   GNU General Public License version 3 (GPLv3). If you cannot accept
  *   GPLv3, you need to be licensed from FMSoft.
- * 
+ *
  *   If you have got a commercial license of this program, please use it
  *   under the terms and conditions of the commercial license.
- * 
+ *
  *   For more information about the commercial license, please refer to
  *   <http://www.minigui.com/en/about/licensing-policy/>.
  */
@@ -56,15 +56,15 @@
 
 #ifdef _MGCHARSET_UNICODE
 extern size_t __mg_strlen (PLOGFONT log_font, const char* mstr);
-extern char* __mg_strnchr (PLOGFONT log_font, const char* s, 
+extern char* __mg_strnchr (PLOGFONT log_font, const char* s,
                 size_t n, int c, int* cl);
-extern int __mg_substrlen (PLOGFONT log_font, const char* text, int len, 
+extern int __mg_substrlen (PLOGFONT log_font, const char* text, int len,
                 int delimiter, int* nr_delim);
 
 static inline BOOL is_utf16_logfont (PDC pdc)
 {
-    DEVFONT* mbc_devfont; 
-    mbc_devfont = pdc->pLogFont->mbc_devfont;
+    DEVFONT* mbc_devfont;
+    mbc_devfont = pdc->pLogFont->devfonts[1];
     if (mbc_devfont && strstr (mbc_devfont->charset_ops->name, "UTF-16")) {
         return TRUE;
     }
@@ -79,14 +79,14 @@ static inline size_t __mg_strlen (PLOGFONT log_font, const char* mstr)
     return strlen (mstr);
 }
 
-static inline char* __mg_strnchr (PLOGFONT logfont, const char* s, 
+static inline char* __mg_strnchr (PLOGFONT logfont, const char* s,
                 size_t n, int c, int* cl)
 {
     *cl = 1;
     return strnchr (s, n, c);
 }
 
-static inline int __mg_substrlen (PLOGFONT logfont, const char* text, int len, 
+static inline int __mg_substrlen (PLOGFONT logfont, const char* text, int len,
                 int delimiter, int* nr_delim)
 {
     return substrlen (text, len, delimiter, nr_delim);
@@ -99,272 +99,60 @@ static inline BOOL is_utf16_logfont (PDC pdc)
 
 #endif
 
-#if 0
-static void txtDrawOneLine (PDC pdc, const unsigned char* pText, int nLen, 
-            int x, int y, const RECT* prcOutput, UINT nFormat, int nTabWidth)
-{
-    /* set rc_output to the possible clipping rect */
-    pdc->rc_output = *prcOutput;
-
-    if (nFormat & DT_EXPANDTABS) {
-        const unsigned char* sub = pText;
-        const unsigned char* left;
-        int nSubLen = nLen;
-        int nOutputLen;
-        int nTabLen;
-                
-        while ((left = (unsigned char*) __mg_strnchr (pdc->pLogFont, 
-                    (const char*)sub, nSubLen, '\t', &nTabLen))) {
-                    
-            nOutputLen = left - sub;
-            x += _gdi_text_out (pdc, x, y, sub, nOutputLen, NULL);
-                    
-            nSubLen -= (nOutputLen + nTabLen);
-            sub = left + nTabLen;
-            x += nTabWidth;
-        }
-
-        if (nSubLen > 0)
-            _gdi_text_out (pdc, x, y, sub, nSubLen, NULL);
-    }
-    else
-        _gdi_text_out (pdc, x, y, pText, nLen, NULL);
-}
-
-static int txtGetWidthOfNextWord (PDC pdc, const unsigned char* pText, 
-                int nCount, int* nChars)
-{
-    SIZE size;
-    DEVFONT* sbc_devfont = pdc->pLogFont->sbc_devfont;
-    DEVFONT* mbc_devfont = pdc->pLogFont->mbc_devfont;
-    WORDINFO word_info = {0}; 
-
-    *nChars = 0;
-    if (nCount == 0) return 0;
-
-    if (mbc_devfont) {
-        int mbc_pos, sub_len;
-
-        mbc_pos = (*mbc_devfont->charset_ops->pos_first_char) 
-                ((const unsigned char*)pText, nCount);
-        if (mbc_pos == 0) {
-            sub_len = (*mbc_devfont->charset_ops->len_first_substr) 
-                    ((const unsigned char*)pText, nCount);
-
-            (*mbc_devfont->charset_ops->get_next_word) 
-                    ((const unsigned char*)pText, sub_len, &word_info);
-
-            if (word_info.len == 0) {
-                *nChars = 0;
-                return 0;
-            }
-        }
-        else if (mbc_pos > 0)
-            nCount = mbc_pos;
-    }
-
-    if (word_info.len == 0)
-        (*sbc_devfont->charset_ops->get_next_word) 
-            ((const unsigned char*)pText, nCount, &word_info);
-
-    _gdi_get_text_extent (pdc, pText, word_info.len, &size);
-
-    *nChars = word_info.len;
-
-	/* Fixed bug of italic font */
-    return size.cx - _gdi_get_italic_added_width (pdc->pLogFont);
-}
-
-/*
-** This function return the normal characters' number (reference)
-** and output width of the line (return value).
-*/
-static int txtGetOneLine (PDC pdc, const unsigned char* pText, int nCount, 
-                int nTabWidth, int maxwidth, UINT uFormat, int* nChar)
-{
-    int word_len, char_len;
-    int word_width, char_width;
-    int line_width;
-    SIZE size;
-	int italic_width = 0;
-
-    *nChar = 0;
-
-    if (uFormat & DT_SINGLELINE) {
-
-        if (uFormat & DT_EXPANDTABS)
-            _gdi_tabbed_text_out (pdc, 0, 0, pText, nCount, nTabWidth, 
-                    TRUE, NULL, &size);
-        else
-            _gdi_get_text_extent (pdc, pText, nCount, &size);
-
-        *nChar = nCount;
-        return size.cx;
-    }
-
-	italic_width = _gdi_get_italic_added_width(pdc->pLogFont);
-	/* Fixed bug of italic font */
-	maxwidth -= italic_width;
-
-    word_len = 0; word_width = 0;
-    char_len = 0; char_width = 0;
-    line_width = 0;
-    while (TRUE) {
-        if (uFormat & DT_CHARBREAK) {
-            if (line_width > maxwidth) {
-                *nChar -= char_len;
-                if (*nChar <= 0) /* ensure to eat at least one char */
-                    *nChar += char_len;
-                break;
-            }
-            word_len = 0;
-        }
-        else if (uFormat & DT_WORDBREAK) {
-            word_width = txtGetWidthOfNextWord (pdc, pText, nCount, 
-                    &word_len);
-
-            if (word_width > maxwidth) {
-                word_len = GetTextExtentPoint ((HDC)pdc, 
-                            (const char*)pText, word_len, 
-                            maxwidth - line_width, NULL, NULL, NULL, &size);
-                word_width = size.cx;
-
-                if (word_len == 0) { /* eat at least one char */
-                    word_len = GetFirstMCharLen (GetCurFont ((HDC)pdc), 
-                            (const char*)pText, nCount);
-                    _gdi_get_text_extent (pdc, pText, word_len, &size);
-
-	                /* Fixed bug of italic font */
-                    word_width = size.cx - italic_width;
-                }
-                *nChar += word_len;
-
-	            /* Fixed bug of italic font */
-                line_width += word_width + italic_width;
-                break;
-            }
-            else if (line_width + word_width > maxwidth)
-                break;
-        }
-        else {
-            word_width = txtGetWidthOfNextWord (pdc, pText, nCount, &word_len);
-        }
-
-        if (word_len > 0) {
-            pText += word_len;
-            nCount -= word_len;
-
-            *nChar += word_len;
-            line_width += word_width;
-        }
-
-        if (nCount <= 0)
-            break;
-
-        char_len = 0;
-        char_width = 0;
-        if (*pText == '\t') {
-            char_len = 1;
-
-            if (uFormat & DT_EXPANDTABS) {
-                char_width = nTabWidth;
-                _gdi_start_new_line (pdc);
-            }
-            else {
-                _gdi_get_text_extent (pdc, pText, 1, &size);
-	            /* Fixed bug of italic font */
-                char_width = size.cx - italic_width;
-            }
-        }
-        else if (*pText == '\n' || *pText == '\r') {
-            (*nChar) ++;
-            break;
-        }
-        else if (*pText == ' ') {
-            char_len = 1;
-            _gdi_get_text_extent (pdc, pText, 1, &size);
-	        /* Fixed bug of italic font */
-            char_width = size.cx - italic_width;
-        }
-
-        if ((word_len + char_len) == 0) { /* ensure to eat at least one char */
-            char_len = GetFirstMCharLen (GetCurFont ((HDC)pdc), 
-                            (const char*)pText, nCount);
-            _gdi_get_text_extent (pdc, pText, char_len, &size);
-
-            char_width = size.cx - italic_width;
-        }
-
-        if (char_len > 0) {
-            pText += char_len;
-            nCount -= char_len;
-
-            *nChar += char_len;
-            line_width += char_width;
-        }
-
-        if (line_width > maxwidth)
-            break;
-    }
-
-	/* Fixed bug of italic font */
-    return line_width + italic_width;
-}
-
-#endif
-
-static BOOL cb_drawtextex2 (void* context, Glyph32 glyph_value, 
-                int glyph_type)
+static BOOL cb_drawtextex2 (void* context, Glyph32 glyph_value,
+                unsigned int char_type)
 {
     DRAWTEXTEX2_CTXT* ctxt = (DRAWTEXTEX2_CTXT*)context;
     int adv_x = 0, adv_y = 0;
     BBOX bbox;
     int bkmode;
 
-    switch (glyph_type) {
-        case MCHAR_TYPE_ZEROWIDTH:
-        case MCHAR_TYPE_CR:
+    switch (char_type & ACHARTYPE_BASIC_MASK) {
+        case ACHAR_BASIC_ZEROWIDTH:
+        case ACHAR_BASIC_CR:
             adv_x = adv_y = 0;
             break;
 
-        case MCHAR_TYPE_HT:
+        case ACHAR_BASIC_HT:
             if(!(ctxt->nFormat & DT_EXPANDTABS))
                 return TRUE;
             _gdi_start_new_line (ctxt->pdc);
             if (ctxt->only_extent) {
-                ctxt->advance += _gdi_get_null_glyph_advance (ctxt->pdc, 
-                    ctxt->tab_width, 
-                    (ctxt->pdc->ta_flags & TA_X_MASK) != TA_RIGHT, 
+                ctxt->advance += _gdi_get_null_glyph_advance (ctxt->pdc,
+                    ctxt->tab_width,
+                    (ctxt->pdc->ta_flags & TA_X_MASK) != TA_RIGHT,
                     ctxt->x, ctxt->y, &adv_x, &adv_y);
             }
             else {
-                ctxt->advance += _gdi_draw_null_glyph (ctxt->pdc, 
-                        ctxt->tab_width, 
-                        (ctxt->pdc->ta_flags & TA_X_MASK) != TA_RIGHT, 
+                ctxt->advance += _gdi_draw_null_glyph (ctxt->pdc,
+                        ctxt->tab_width,
+                        (ctxt->pdc->ta_flags & TA_X_MASK) != TA_RIGHT,
                         ctxt->x, ctxt->y, &adv_x, &adv_y);
             }
             break;
-        case MCHAR_TYPE_VOWEL:
+
+        case ACHAR_BASIC_VOWEL:
             if (!ctxt->only_extent) {
                 bkmode = ctxt->pdc->bkmode;
                 //ctxt->pdc->bkmode = BM_TRANSPARENT;
-                _gdi_draw_one_glyph (ctxt->pdc, glyph_value, 
-                        (ctxt->pdc->ta_flags & TA_X_MASK) != TA_RIGHT, 
+                _gdi_draw_one_glyph (ctxt->pdc, glyph_value,
+                        (ctxt->pdc->ta_flags & TA_X_MASK) != TA_RIGHT,
                         ctxt->x, ctxt->y, &adv_x, &adv_y);
                 ctxt->pdc->bkmode = bkmode;
                 adv_x = adv_y = 0;
             }
             break;
+
         default:
             if (ctxt->only_extent) {
-                ctxt->advance += _gdi_get_glyph_advance (ctxt->pdc, 
-                    glyph_value, 
-                    (ctxt->pdc->ta_flags & TA_X_MASK) != TA_RIGHT, 
+                ctxt->advance += _gdi_get_glyph_advance (ctxt->pdc,
+                    glyph_value,
+                    (ctxt->pdc->ta_flags & TA_X_MASK) != TA_RIGHT,
                     ctxt->x, ctxt->y, &adv_x, &adv_y, &bbox);
             }
             else {
-                ctxt->advance += _gdi_draw_one_glyph (ctxt->pdc, glyph_value, 
-                        (ctxt->pdc->ta_flags & TA_X_MASK) != TA_RIGHT, 
+                ctxt->advance += _gdi_draw_one_glyph (ctxt->pdc, glyph_value,
+                        (ctxt->pdc->ta_flags & TA_X_MASK) != TA_RIGHT,
                         ctxt->x, ctxt->y, &adv_x, &adv_y);
             }
             break;
@@ -376,7 +164,7 @@ static BOOL cb_drawtextex2 (void* context, Glyph32 glyph_value,
     return TRUE;
 }
 
-int _gdi_get_drawtext_extent (PDC pdc, const unsigned char* text, int len, 
+int _gdi_get_drawtext_extent (PDC pdc, const unsigned char* text, int len,
                 void* context, SIZE* size)
 {
     DRAWTEXTEX2_CTXT  ctxt;
@@ -391,7 +179,7 @@ int _gdi_get_drawtext_extent (PDC pdc, const unsigned char* text, int len,
     ctxt.tab_width = _tmp->tab_width;
 
     _gdi_start_new_line (pdc);
-    _gdi_reorder_text (pdc, text, len, 
+    _gdi_reorder_text (pdc, text, len,
         (pdc->ta_flags & TA_X_MASK) != TA_RIGHT, cb_drawtextex2, &ctxt);
 
     if (size) {
@@ -402,15 +190,15 @@ int _gdi_get_drawtext_extent (PDC pdc, const unsigned char* text, int len,
     return ctxt.advance;
 }
 
-int DrawTextEx2 (HDC hdc, const char* pText, int nCount, 
+int DrawTextEx2 (HDC hdc, const char* pText, int nCount,
                 RECT* pRect, int indent, UINT nFormat, DTFIRSTLINE *firstline)
 {
     DRAWTEXTEX2_CTXT ctxt;
     PDC pdc;
-    int nLines = 0; 
+    int nLines = 0;
     int x = 0, y;
-    RECT rcDraw; 
-    int nTabWidth; 
+    RECT rcDraw;
+    int nTabWidth;
     int line_height, line_len = 0;
     int nr_delim_newline = 0;
     const unsigned char* pline = NULL;
@@ -420,9 +208,8 @@ int DrawTextEx2 (HDC hdc, const char* pText, int nCount,
     if (RECTWP(pRect) == 0 || RECTHP(pRect) == 0) return -1;
 
     pdc = dc_HDC2PDC(hdc);
-    /* for support utf-16 by humingming 2010.7.6 */
-    //if (is_utf16_logfont (pdc)) return -1;
-    if (pdc->pLogFont->rotation) return -1;
+    if (pdc->pLogFont->rotation)
+        return -1;
 
     if (nCount < 0) nCount = __mg_strlen (pdc->pLogFont, pText);
     if (nCount <= 0) return -1;
@@ -431,13 +218,13 @@ int DrawTextEx2 (HDC hdc, const char* pText, int nCount,
 
     line_height = pdc->pLogFont->size + pdc->alExtra + pdc->blExtra;
     if (nFormat & DT_TABSTOP)
-        nTabWidth = HIWORD (nFormat) * 
-                    (*pdc->pLogFont->sbc_devfont->font_ops->get_ave_width)
-                    (pdc->pLogFont, pdc->pLogFont->sbc_devfont);
+        nTabWidth = HIWORD (nFormat) *
+                    (*pdc->pLogFont->devfonts[0]->font_ops->get_ave_width)
+                    (pdc->pLogFont, pdc->pLogFont->devfonts[0]);
     else {
-        nTabWidth = pdc->tabstop * 
-                    (*pdc->pLogFont->sbc_devfont->font_ops->get_ave_width)
-                    (pdc->pLogFont, pdc->pLogFont->sbc_devfont);
+        nTabWidth = pdc->tabstop *
+                    (*pdc->pLogFont->devfonts[0]->font_ops->get_ave_width)
+                    (pdc->pLogFont, pdc->pLogFont->devfonts[0]);
     }
 
     /* Transfer logical to device to screen here. */
@@ -449,8 +236,7 @@ int DrawTextEx2 (HDC hdc, const char* pText, int nCount,
     /* If output rect is too small, we shouldn't output any text.*/
     if (RECTW(rcDraw) < pdc->pLogFont->size
         && RECTH(rcDraw) < pdc->pLogFont->size) {
-        _MG_PRINTF ("NEWGDI: "
-            "Output rect is too small, we won't output any text. \n");
+        _WRN_PRINTF ("Output rect is too small, we won't output any text.");
         return -1;
     }
 
@@ -476,7 +262,7 @@ int DrawTextEx2 (HDC hdc, const char* pText, int nCount,
     }
 
     /* set the start_x pos.*/
-    if (nFormat & DT_RIGHT){
+    if (nFormat & DT_RIGHT) {
         x = rcDraw.right;
         old_ta = SetTextAlign(hdc, TA_RIGHT);
     }
@@ -485,7 +271,7 @@ int DrawTextEx2 (HDC hdc, const char* pText, int nCount,
         x = rcDraw.left;
     }
 
-    if(nFormat & DT_CALCRECT){
+    if (nFormat & DT_CALCRECT) {
         *pRect = rcDraw;
         NormalizeRect (pRect);
         pRect->top  = y;
@@ -506,7 +292,7 @@ int DrawTextEx2 (HDC hdc, const char* pText, int nCount,
     while (nCount > 0) {
         int line_x, maxwidth;
 
-        line_len = __mg_substrlen (pdc->pLogFont, 
+        line_len = __mg_substrlen (pdc->pLogFont,
                 pText, nCount, '\n', &nr_delim_newline);
 
         /* line_len == 0 means the first char is '\n' */
@@ -557,7 +343,7 @@ int DrawTextEx2 (HDC hdc, const char* pText, int nCount,
 
                 /* only get text extent.*/
                 ctxt.only_extent = TRUE;
-                _gdi_reorder_text_break (pdc, pline, line_len, 
+                _gdi_reorder_text_break (pdc, pline, line_len,
                         (pdc->ta_flags & TA_X_MASK) != TA_RIGHT,
                         cb_drawtextex2, &ctxt);
 
@@ -569,12 +355,12 @@ int DrawTextEx2 (HDC hdc, const char* pText, int nCount,
                 ctxt.only_extent = old_set;
                 if((nFormat & DT_CALCRECT) && (pRect->left > ctxt.x))
                     pRect->left = ctxt.x;
-                _gdi_reorder_text_break (pdc, pline, line_len, 
+                _gdi_reorder_text_break (pdc, pline, line_len,
                         (pdc->ta_flags & TA_X_MASK) != TA_RIGHT,
                         cb_drawtextex2, &ctxt);
             }
             else {
-                _gdi_reorder_text_break (pdc, pline, line_len, 
+                _gdi_reorder_text_break (pdc, pline, line_len,
                         (pdc->ta_flags & TA_X_MASK) != TA_RIGHT,
                         cb_drawtextex2, &ctxt);
                 if ((nFormat & DT_CALCRECT) && (nFormat & DT_RIGHT)){

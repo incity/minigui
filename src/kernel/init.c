@@ -321,9 +321,14 @@ static void sig_handler (int v)
 {
     if (v == SIGSEGV) {
         kill (getpid(), SIGABRT); /* cause core dump */
-    }else if (__mg_quiting_stage > 0) {
+    }
+    else if (v == SIGINT) {
+        _exit(1); /* force to quit */
+    }
+    else if (__mg_quiting_stage > 0) {
         ExitGUISafely(-1);
-    }else{
+    }
+    else {
         exit(1); /* force to quit */
     }
 }
@@ -377,11 +382,17 @@ int GUIAPI InitGUI (int args, const char *agr[])
     __mg_def_proc[2] = PreDefControlProc;
 
     step++;
+    if (!mg_InitSliceAllocator ()) {
+        fprintf (stderr, "KERNEL>InitGUI: failed to initialize slice allocator!\n");
+        return step;
+    }
+
+    step++;
     if (!mg_InitFixStr ()) {
         fprintf (stderr, "KERNEL>InitGUI: Init Fixed String module failure!\n");
         return step;
     }
-    
+
     step++;
     /* Init miscelleous*/
     if (!mg_InitMisc ()) {
@@ -585,6 +596,8 @@ void GUIAPI TerminateGUI (int not_used)
     extern void mg_miFreeArcCache (void);
     mg_miFreeArcCache ();
 #endif
+
+    mg_TerminateSliceAllocator();
 
     /* 
      * Restore original termio

@@ -65,11 +65,7 @@
 #define RBFONT_INFO(devfont) ((RBFINFO*)(devfont.data))
 
 /********************** Load/Unload of raw bitmap font ***********************/
-#if 0
-static void* load_font_data (char* font_name, char* file_name, 
-        char* real_font_name)
-#endif
-static void* load_font_data (const char* font_name, const char* file_name)
+static void* load_font_data (DEVFONT* devfont, const char* font_name, const char* file_name)
 {
     FILE* fp = NULL;
     RBFINFO* rbf_info = calloc (1, sizeof(RBFINFO));
@@ -129,7 +125,7 @@ error_load:
 
 /********************** Init/Term of raw bitmap font ***********************/
 
-static void unload_font_data (void* data)
+static void unload_font_data (DEVFONT* devfont, void* data)
 {
     RBFINFO* rbfinfo = (RBFINFO*)data;
 #ifdef HAVE_MMAP
@@ -143,7 +139,7 @@ static void unload_font_data (void* data)
 
 /*************** Raw bitmap font operations *********************************/
 
-static DWORD get_glyph_type (LOGFONT* logfont, DEVFONT* devfont)
+static DWORD get_glyph_bmptype (LOGFONT* logfont, DEVFONT* devfont)
 {
     return DEVFONTGLYPHTYPE_MONOBMP;
 }
@@ -158,7 +154,7 @@ static int get_font_height (LOGFONT* logfont, DEVFONT* devfont)
     return RBFONT_INFO_P (devfont)->height * GET_DEVFONT_SCALE (logfont, devfont);
 }
 
-static int get_font_size (LOGFONT* logfont, DEVFONT* devfont, int expect)
+static int get_font_size (LOGFONT* logfont, DEVFONT* devfont, int expect, int df_slot)
 {
     int height = RBFONT_INFO_P (devfont)->height;
     unsigned short scale = 1;
@@ -166,7 +162,9 @@ static int get_font_size (LOGFONT* logfont, DEVFONT* devfont, int expect)
     if (logfont->style & FS_OTHER_AUTOSCALE)
         scale = font_GetBestScaleFactor (height, expect);
 
-    SET_DEVFONT_SCALE (logfont, devfont, scale);
+    if (df_slot >= 0 && df_slot < MAXNR_DEVFONTS) {
+        SET_DEVFONT_SCALE (logfont, df_slot, scale);
+    }
 
     return height * scale;
 }
@@ -192,7 +190,7 @@ static int get_font_ascent (LOGFONT* logfont, DEVFONT* devfont)
 static int get_font_descent (LOGFONT* logfont, DEVFONT* devfont)
 {
     int height = RBFONT_INFO_P (devfont)->height;
-    
+
     height *= GET_DEVFONT_SCALE (logfont, devfont);
 
     if (height >= 40)
@@ -208,13 +206,13 @@ static int get_font_descent (LOGFONT* logfont, DEVFONT* devfont)
 }
 
 static const void* get_glyph_monobitmap (LOGFONT* logfont, DEVFONT* devfont,
-            const Glyph32 glyph_value, int* pitch, unsigned short* scale)
+            Glyph32 glyph_value, SIZE* sz, int* pitch, unsigned short* scale)
 {
     int bitmap_size;
-    Glyph32 glyph_tmp = glyph_value;
 
-    if (glyph_tmp >= RBFONT_INFO_P (devfont)->nr_glyphs)
-        glyph_tmp = devfont->charset_ops->def_glyph_value;
+    glyph_value = REAL_GLYPH(glyph_value);
+    if (glyph_value >= RBFONT_INFO_P (devfont)->nr_glyphs)
+        glyph_value = devfont->charset_ops->def_char_value;
 
     bitmap_size = ((RBFONT_INFO_P (devfont)->width + 7) >> 3) 
                 * RBFONT_INFO_P (devfont)->height; 
@@ -224,12 +222,13 @@ static const void* get_glyph_monobitmap (LOGFONT* logfont, DEVFONT* devfont,
     if (scale)
         *scale = GET_DEVFONT_SCALE (logfont, devfont);
 
-    return RBFONT_INFO_P (devfont)->data + bitmap_size * glyph_tmp;
+    return RBFONT_INFO_P (devfont)->data + bitmap_size * glyph_value;
 }
 
 static BOOL is_glyph_existed (LOGFONT* logfont, DEVFONT* devfont, 
         Glyph32 glyph_value)
 {
+    glyph_value = REAL_GLYPH(glyph_value);
     if (glyph_value > RBFONT_INFO_P(devfont)->nr_glyphs)
         return FALSE;
     else
@@ -241,7 +240,8 @@ static int get_glyph_advance (LOGFONT* logfont, DEVFONT* devfont,
 {
     int advance = RBFONT_INFO_P (devfont)->width * 
                     GET_DEVFONT_SCALE (logfont, devfont);
-    *px += advance;
+    if (px)
+        *px += advance;
     return advance;
 }
 
@@ -268,7 +268,7 @@ static int is_rotatable (LOGFONT* logfont, DEVFONT* devfont, int rot_desired)
 
 /**************************** Global data ************************************/
 FONTOPS __mg_rbf_ops = {
-    get_glyph_type,
+    get_glyph_bmptype,
     get_ave_width,
     get_ave_width,  // max_width same as ave_width
     get_font_height,

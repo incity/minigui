@@ -41,8 +41,6 @@
 #ifndef GUI_GDI_GLYPH_H
     #define GUI_GDI_GLYPH_H
 
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif  /* __cplusplus */

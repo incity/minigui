@@ -1,33 +1,33 @@
 /*
- *   This file is part of MiniGUI, a mature cross-platform windowing 
+ *   This file is part of MiniGUI, a mature cross-platform windowing
  *   and Graphics User Interface (GUI) support system for embedded systems
  *   and smart IoT devices.
- * 
+ *
  *   Copyright (C) 2002~2018, Beijing FMSoft Technologies Co., Ltd.
  *   Copyright (C) 1998~2002, WEI Yongming
- * 
+ *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation, either version 3 of the License, or
  *   (at your option) any later version.
- * 
+ *
  *   This program is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU General Public License for more details.
- * 
+ *
  *   You should have received a copy of the GNU General Public License
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  *   Or,
- * 
+ *
  *   As this program is a library, any link to this program must follow
  *   GNU General Public License version 3 (GPLv3). If you cannot accept
  *   GPLv3, you need to be licensed from FMSoft.
- * 
+ *
  *   If you have got a commercial license of this program, please use it
  *   under the terms and conditions of the commercial license.
- * 
+ *
  *   For more information about the commercial license, please refer to
  *   <http://www.minigui.com/en/about/licensing-policy/>.
  */
@@ -116,7 +116,7 @@ static void dc_InitDC (PDC pdc, HWND hWnd, BOOL bIsClient);
 static void dc_InitMemDCFrom (PDC pdc, const PDC pdc_ref);
 static void dc_InitScreenDC (PDC pdc, GAL_Surface* surface);
 
-static BOOL RestrictControlECRGNEx (RECT* minimal, 
+static BOOL RestrictControlECRGNEx (RECT* minimal,
         PCONTROL pCtrl, CLIPRGN * ergn)
 {
     RECT rc;
@@ -183,7 +183,7 @@ static BOOL RestrictControlECRGNEx (RECT* minimal,
 BOOL mg_InitScreenDC (void* surface)
 {
     InitFreeClipRectList (&__mg_FreeClipRectList, SIZE_CLIPRECTHEAP);
-    
+
     INIT_LOCK (&__mg_gdilock, NULL);
     INIT_LOCK (&dcslot, NULL);
 
@@ -221,16 +221,16 @@ void mg_TerminateScreenDC (void)
 #define INIT_SPECIFICAL_FONTS(etc_section) \
 { \
     if (!font_InitSpecificalFonts (etc_section)) { \
-        _MG_PRINTF ("NEWGDI>InitGDI: Can not initialize fonts defined in section %s!\n", etc_section); \
+        _WRN_PRINTF ("Can not initialize fonts defined in section %s!", etc_section); \
         goto error; \
     } \
 }
 
 #ifndef _MG_MINIMALGDI
 BOOL mg_InitGDI (void)
-{   
+{
     if (!InitTextBitmapBuffer ()) {
-        _MG_PRINTF ("NEWGDI>InitGDI: Can not initialize text bitmap buffer!\n");
+        _WRN_PRINTF ("Can not initialize text bitmap buffer!");
         goto error;
     }
 
@@ -252,7 +252,7 @@ BOOL mg_InitGDI (void)
 
 #if (defined (_MGFONT_TTF) || defined (_MGFONT_FT2)) && defined(_MGRM_THREADS)
     if (!font_InitFreetypeLibrary ()) {
-        _MG_PRINTF ("NEWGDI>InitGDI: Can not initialize freetype fonts!\n");
+        _WRN_PRINTF ("Can not initialize freetype fonts!");
         goto error;
     }
     INIT_SPECIFICAL_FONTS (FONT_ETC_SECTION_NAME_TTF);
@@ -261,13 +261,13 @@ BOOL mg_InitGDI (void)
     /* TODO: add other font support here */
 #if defined (_MGFONT_SEF) && !defined(_LITE_VERSION)
     if(!initialize_scripteasy()) {
-        _MG_PRINTF ("NEWGDI>InitGDI: Can not initialize ScriptEasy fonts!\n");
+        _WRN_PRINTF ("Can not initialize ScriptEasy fonts!");
         goto error;
     }
 #endif
 
     if (!font_InitIncoreFonts ()) {
-        _MG_PRINTF ("NEWGDI>InitGDI: Can not initialize incore fonts!\n");
+        _WRN_PRINTF ("Can not initialize incore fonts!");
         goto error;
     }
 
@@ -276,7 +276,7 @@ BOOL mg_InitGDI (void)
 #endif
 
     if (!mg_InitSysFont ()) {
-        _MG_PRINTF ("NEWGDI>InitGDI: Can not create system fonts!\n");
+        _WRN_PRINTF ("Can not create system fonts!");
         goto error;
     }
 
@@ -295,7 +295,7 @@ void mg_TerminateGDI( void )
     font_TermSpecificalFonts (FONT_ETC_SECTION_NAME_TTF);
     font_TermFreetypeLibrary ();
 #endif
-#endif 
+#endif
 
 #ifdef _MGFONT_QPF
     font_TermSpecificalFonts (FONT_ETC_SECTION_NAME_QPF);
@@ -325,7 +325,7 @@ void mg_TerminateGDI( void )
 #endif
 
 /*
- * Function: int GUIAPI GetGDCapability( int iItem) 
+ * Function: int GUIAPI GetGDCapability( int iItem)
  *      This Function return DC parameters.
  * Parameters:
  *      The element want to retrive.
@@ -349,7 +349,7 @@ unsigned int GUIAPI GetGDCapability (HDC hdc, int iItem)
  * FIXME
  * for 1555 pixel format, color depth should be 15
  */
-            if (iret == 16 && GAL_RMask(pdc->surface) == 0x7c00 && 
+            if (iret == 16 && GAL_RMask(pdc->surface) == 0x7c00 &&
                               GAL_GMask(pdc->surface) == 0x3e00)
                 iret = 15;
             break;
@@ -386,7 +386,7 @@ unsigned int GUIAPI GetGDCapability (HDC hdc, int iItem)
             else
                 iret = 0xFFFFFFFF;
             break;
- 
+
         case GDCAP_HPIXEL:
             iret = GAL_Width (pdc->surface);
             break;
@@ -401,6 +401,10 @@ unsigned int GUIAPI GetGDCapability (HDC hdc, int iItem)
 
         case GDCAP_MAXY:
             iret = RECTH (pdc->DevRC) - 1;
+            break;
+
+        case GDCAP_DPI:
+            iret = pdc->surface->dpi;
             break;
     }
 
@@ -465,7 +469,7 @@ BOOL dc_GenerateECRgn(PDC pdc, BOOL fForce)
     if (fForce || (pdc->oldage != pdc->pGCRInfo->age)) {
 
         /*
-         * update pdc->DevRC, and restrict the effective 
+         * update pdc->DevRC, and restrict the effective
          */
         if (pdc->bIsClient)
             gui_WndClientRect (pdc->hwnd, &pdc->DevRC);
@@ -480,15 +484,15 @@ BOOL dc_GenerateECRgn(PDC pdc, BOOL fForce)
         while (pcr) {
             coor_DP2SP (pdc, &pcr->rc.left, &pcr->rc.top);
             coor_DP2SP (pdc, &pcr->rc.right, &pcr->rc.bottom);
-            
+
             pcr = pcr->next;
         }
 
         /* intersect with global clipping region. */
         {
-            coor_DP2SP (pdc, &pdc->ecrgn.rcBound.left, 
+            coor_DP2SP (pdc, &pdc->ecrgn.rcBound.left,
                             &pdc->ecrgn.rcBound.top);
-            coor_DP2SP (pdc, &pdc->ecrgn.rcBound.right, 
+            coor_DP2SP (pdc, &pdc->ecrgn.rcBound.right,
                             &pdc->ecrgn.rcBound.bottom);
             ClipRgnIntersect (&pdc->ecrgn, &pdc->ecrgn, &pdc->pGCRInfo->crgn);
 #ifdef _REGION_DEBUG
@@ -497,7 +501,7 @@ BOOL dc_GenerateECRgn(PDC pdc, BOOL fForce)
 #endif
         }
 
-        /* 
+        /*
          * clipping region more with pdc->DevRC.
          */
         minimal = pdc->DevRC;
@@ -518,7 +522,7 @@ BOOL dc_GenerateECRgn(PDC pdc, BOOL fForce)
         else {
             IntersectClipRect (&pdc->ecrgn, &minimal);
         }
-        
+
         pdc->oldage = pdc->pGCRInfo->age;
     }
 
@@ -627,11 +631,11 @@ static void _dc_draw_pixel_span_set_2 (COMP_CTXT* comp_ctxt, int w)
                 *dest16 = (Uint16)comp_ctxt->cur_pixel;
                 dest16 += step;
                 w -= step;
-            } while (w > 0); 
+            } while (w > 0);
         }
         else
         {
-            Uint32 mixture = (((Uint16)comp_ctxt->cur_pixel << 16) 
+            Uint32 mixture = (((Uint16)comp_ctxt->cur_pixel << 16)
                     | (Uint16)comp_ctxt->cur_pixel);
             Uint32 * dest32;
             int count;
@@ -686,7 +690,7 @@ static void  _dc_draw_pixel_span_set_3 (COMP_CTXT* comp_ctxt, int w)
 static void  _dc_draw_pixel_span_set_4 (COMP_CTXT* comp_ctxt, int w)
 {
     Uint32* row = (Uint32*)comp_ctxt->cur_dst;
-    
+
     if (comp_ctxt->step == 1) {
         GAL_memset4 (row, comp_ctxt->cur_pixel, w);
     }
@@ -703,7 +707,7 @@ static void  _dc_draw_pixel_span_and_1 (COMP_CTXT* comp_ctxt, int w)
 {
     Uint8* row = comp_ctxt->cur_dst;
 #ifdef ASM_memandset4
-    if (comp_ctxt->step == 1 && !((Uint32)row & 3) 
+    if (comp_ctxt->step == 1 && !((Uint32)row & 3)
             && !(w & 3) && (w > 3)) {
         Uint16 _w = MAKEWORD16 (comp_ctxt->cur_pixel, comp_ctxt->cur_pixel);
         Uint32 _u = MAKELONG32 (_w, _w);
@@ -723,7 +727,7 @@ static void  _dc_draw_pixel_span_and_2 (COMP_CTXT* comp_ctxt, int w)
 {
     Uint16* row = (Uint16*)comp_ctxt->cur_dst;
 #ifdef ASM_memandset4
-    if (comp_ctxt->step == 1 && !((Uint32)row & 3) 
+    if (comp_ctxt->step == 1 && !((Uint32)row & 3)
             && !(w & 1) && (w > 1)) {
         Uint32 u = MAKELONG (comp_ctxt->cur_pixel, comp_ctxt->cur_pixel);
         ASM_memandset4 (row, u, w >> 1);
@@ -777,7 +781,7 @@ static void  _dc_draw_pixel_span_or_1 (COMP_CTXT* comp_ctxt, int w)
 {
     Uint8* row = comp_ctxt->cur_dst;
 #ifdef ASM_memorset4
-    if (comp_ctxt->step == 1 && !((Uint32)row & 3) 
+    if (comp_ctxt->step == 1 && !((Uint32)row & 3)
             && !(w & 3) && (w > 3)) {
         Uint16 _w = MAKEWORD16 (comp_ctxt->cur_pixel, comp_ctxt->cur_pixel);
         Uint32 _u = MAKELONG32 (_w, _w);
@@ -797,7 +801,7 @@ static void  _dc_draw_pixel_span_or_2 (COMP_CTXT* comp_ctxt, int w)
 {
     Uint16* row = (Uint16*)comp_ctxt->cur_dst;
 #ifdef ASM_memorset4
-    if (comp_ctxt->step == 1 && !((Uint32)row & 3) 
+    if (comp_ctxt->step == 1 && !((Uint32)row & 3)
             && !(w & 1) && (w > 1)) {
         Uint32 u = MAKELONG (comp_ctxt->cur_pixel, comp_ctxt->cur_pixel);
         ASM_memorset4 (row, u, w>>1);
@@ -852,7 +856,7 @@ static void  _dc_draw_pixel_span_xor_1 (COMP_CTXT* comp_ctxt, int w)
 {
     Uint8* row = comp_ctxt->cur_dst;
 #ifdef ASM_memxorset4
-    if (comp_ctxt->step == 1 && !((Uint32)comp_ctxt->cur_dst & 3) 
+    if (comp_ctxt->step == 1 && !((Uint32)comp_ctxt->cur_dst & 3)
             && !(w & 3) && (w > 3)) {
         Uint16 _w = MAKEWORD16 (comp_ctxt->cur_pixel, comp_ctxt->cur_pixel);
         Uint32 _u = MAKELONG32 (_w, _w);
@@ -860,7 +864,7 @@ static void  _dc_draw_pixel_span_xor_1 (COMP_CTXT* comp_ctxt, int w)
         return;
     }
 #endif
-    
+
     while (w > 0) {
         *row ^= (Uint8) comp_ctxt->cur_pixel;
         row += comp_ctxt->step;
@@ -872,7 +876,7 @@ static void  _dc_draw_pixel_span_xor_2 (COMP_CTXT* comp_ctxt, int w)
 {
     Uint16* row = (Uint16*)comp_ctxt->cur_dst;
 #ifdef ASM_memxorset4
-    if (comp_ctxt->step == 1 && !((Uint32)comp_ctxt->cur_dst & 3) 
+    if (comp_ctxt->step == 1 && !((Uint32)comp_ctxt->cur_dst & 3)
             && !(w & 1) && (w > 1)) {
         Uint32 u = MAKELONG (comp_ctxt->cur_pixel, comp_ctxt->cur_pixel);
         ASM_memxorset4 (comp_ctxt->cur_dst, u, w>>1);
@@ -967,7 +971,7 @@ static void _dc_step_x_4 (PDC pdc, int step)
     pdc->cur_dst += step << 2;
 }
 
-static void _dc_draw_src_span_set_0 
+static void _dc_draw_src_span_set_0
 (COMP_CTXT* comp_ctxt, const gal_uint8* src, int bytes_per_pixel, int w)
 {
     int n = w * bytes_per_pixel;
@@ -979,7 +983,7 @@ static void _dc_draw_src_span_set_0
         ASM_memcpy (comp_ctxt->cur_dst, src, n);
 }
 
-static void _dc_draw_src_span_set_1 
+static void _dc_draw_src_span_set_1
 (COMP_CTXT* comp_ctxt, gal_uint8* src, int bkmode, int w)
 {
     if (comp_ctxt->step == 1 && bkmode != BM_TRANSPARENT) {
@@ -1006,7 +1010,7 @@ static void _dc_draw_src_span_set_1
     }
 }
 
-static void _dc_draw_src_span_set_2 
+static void _dc_draw_src_span_set_2
 (COMP_CTXT* comp_ctxt, gal_uint8* src, int bkmode, int w)
 {
     if (comp_ctxt->step == 1 && bkmode != BM_TRANSPARENT) {
@@ -1034,7 +1038,7 @@ static void _dc_draw_src_span_set_2
     }
 }
 
-static void _dc_draw_src_span_set_3 
+static void _dc_draw_src_span_set_3
 (COMP_CTXT* comp_ctxt, gal_uint8* src, int bkmode, int w)
 {
     if (comp_ctxt->step == 1 && bkmode != BM_TRANSPARENT) {
@@ -1071,7 +1075,7 @@ static void _dc_draw_src_span_set_3
     }
 }
 
-static void _dc_draw_src_span_set_4 
+static void _dc_draw_src_span_set_4
 (COMP_CTXT* comp_ctxt, gal_uint8* src, int bkmode, int w)
 {
     Uint32* dstrow = (Uint32*)comp_ctxt->cur_dst;
@@ -1099,14 +1103,14 @@ static void _dc_draw_src_span_set_4
     }
 }
 
-static void _dc_draw_src_span_and_1 
+static void _dc_draw_src_span_and_1
 (COMP_CTXT* comp_ctxt, gal_uint8* src, int bkmode, int w)
 {
     Uint8* row = comp_ctxt->cur_dst;
 
 #ifdef ASM_memandcpy4
     if (comp_ctxt->step == 1 && bkmode != BM_TRANSPARENT
-            && !((Uint32)row & 3) && !((Uint32)src & 3) 
+            && !((Uint32)row & 3) && !((Uint32)src & 3)
             && !(w & 3) && (w > 3)) {
         ASM_memandcpy4 (row, src, w >> 2);
         return;
@@ -1130,7 +1134,7 @@ static void _dc_draw_src_span_and_1
     }
 }
 
-static void _dc_draw_src_span_and_2 
+static void _dc_draw_src_span_and_2
 (COMP_CTXT* comp_ctxt, gal_uint8* src, int bkmode, int w)
 {
     Uint16* dstrow = (Uint16*)comp_ctxt->cur_dst;
@@ -1138,7 +1142,7 @@ static void _dc_draw_src_span_and_2
 
 #ifdef ASM_memandcpy4
     if (comp_ctxt->step == 1 && bkmode != BM_TRANSPARENT
-            && !((Uint32)dstrow & 3) && !((Uint32)srcrow & 3) 
+            && !((Uint32)dstrow & 3) && !((Uint32)srcrow & 3)
             && !(w & 1) && (w > 1)) {
         ASM_memandcpy4 (dstrow, srcrow, w >> 1);
         return;
@@ -1162,7 +1166,7 @@ static void _dc_draw_src_span_and_2
     }
 }
 
-static void _dc_draw_src_span_and_3 
+static void _dc_draw_src_span_and_3
 (COMP_CTXT* comp_ctxt, gal_uint8* src, int bkmode, int w)
 {
     Uint8* row = comp_ctxt->cur_dst;
@@ -1212,7 +1216,7 @@ static void _dc_draw_src_span_and_3
     }
 }
 
-static void _dc_draw_src_span_and_4 
+static void _dc_draw_src_span_and_4
 (COMP_CTXT* comp_ctxt, gal_uint8* src, int bkmode, int w)
 {
     Uint32* dstrow = (Uint32*)comp_ctxt->cur_dst;
@@ -1243,14 +1247,14 @@ static void _dc_draw_src_span_and_4
 
 }
 
-static void _dc_draw_src_span_or_1 
+static void _dc_draw_src_span_or_1
 (COMP_CTXT* comp_ctxt, gal_uint8* src, int bkmode, int w)
 {
     Uint8* row = comp_ctxt->cur_dst;
 
 #ifdef ASM_memorcpy4
     if (comp_ctxt->step == 1 && bkmode != BM_TRANSPARENT
-            && !((Uint32)row & 3) && !((Uint32)src & 3) 
+            && !((Uint32)row & 3) && !((Uint32)src & 3)
             && !(w & 3) && (w > 3)) {
         ASM_memorcpy4 (row, src, w >> 2);
         return;
@@ -1274,7 +1278,7 @@ static void _dc_draw_src_span_or_1
     }
 }
 
-static void _dc_draw_src_span_or_2 
+static void _dc_draw_src_span_or_2
 (COMP_CTXT* comp_ctxt, gal_uint8* src, int bkmode, int w)
 {
     Uint16* dstrow = (Uint16*)comp_ctxt->cur_dst;
@@ -1282,7 +1286,7 @@ static void _dc_draw_src_span_or_2
 
 #ifdef ASM_memorcpy4
     if (comp_ctxt->step == 1 && bkmode != BM_TRANSPARENT
-            && !((Uint32)dstrow & 3) && !((Uint32)srcrow & 3) 
+            && !((Uint32)dstrow & 3) && !((Uint32)srcrow & 3)
             && !(w & 1) && (w > 1)) {
         ASM_memorcpy4 (dstrow, srcrow, w >> 1);
         return;
@@ -1306,7 +1310,7 @@ static void _dc_draw_src_span_or_2
     }
 }
 
-static void _dc_draw_src_span_or_3 
+static void _dc_draw_src_span_or_3
 (COMP_CTXT* comp_ctxt, gal_uint8* src, int bkmode, int w)
 {
     Uint8* row = comp_ctxt->cur_dst;
@@ -1356,7 +1360,7 @@ static void _dc_draw_src_span_or_3
     }
 }
 
-static void _dc_draw_src_span_or_4 
+static void _dc_draw_src_span_or_4
 (COMP_CTXT* comp_ctxt, gal_uint8* src, int bkmode, int w)
 {
     Uint32* dstrow = (Uint32*)comp_ctxt->cur_dst;
@@ -1386,14 +1390,14 @@ static void _dc_draw_src_span_or_4
     }
 }
 
-static void _dc_draw_src_span_xor_1 
+static void _dc_draw_src_span_xor_1
 (COMP_CTXT* comp_ctxt, gal_uint8* src, int bkmode, int w)
 {
     Uint8* row = comp_ctxt->cur_dst;
 
 #ifdef ASM_memxorcpy4
-    if (comp_ctxt->step == 1 && bkmode != BM_TRANSPARENT 
-            && !((Uint32)row & 3) && !((Uint32)src & 3) 
+    if (comp_ctxt->step == 1 && bkmode != BM_TRANSPARENT
+            && !((Uint32)row & 3) && !((Uint32)src & 3)
             && !(w & 3) && (w > 3)) {
         ASM_memxorcpy4 (row, src, w >> 2);
         return;
@@ -1417,7 +1421,7 @@ static void _dc_draw_src_span_xor_1
     }
 }
 
-static void _dc_draw_src_span_xor_2 
+static void _dc_draw_src_span_xor_2
 (COMP_CTXT* comp_ctxt, gal_uint8* src, int bkmode, int w)
 {
     Uint16* dstrow = (Uint16*)comp_ctxt->cur_dst;
@@ -1425,7 +1429,7 @@ static void _dc_draw_src_span_xor_2
 
 #ifdef ASM_memxorcpy4
     if (comp_ctxt->step == 1 && bkmode != BM_TRANSPARENT
-            && !((Uint32)dstrow & 3) && !((Uint32)srcrow & 3) 
+            && !((Uint32)dstrow & 3) && !((Uint32)srcrow & 3)
             && !(w & 1) && (w > 1)) {
         ASM_memxorcpy4 (dstrow, srcrow, w >> 1);
         return;
@@ -1449,7 +1453,7 @@ static void _dc_draw_src_span_xor_2
     }
 }
 
-static void _dc_draw_src_span_xor_3 
+static void _dc_draw_src_span_xor_3
 (COMP_CTXT* comp_ctxt, gal_uint8* src, int bkmode, int w)
 {
     Uint8* row = comp_ctxt->cur_dst;
@@ -1499,7 +1503,7 @@ static void _dc_draw_src_span_xor_3
     }
 }
 
-static void _dc_draw_src_span_xor_4 
+static void _dc_draw_src_span_xor_4
 (COMP_CTXT* comp_ctxt, gal_uint8* src, int bkmode, int w)
 {
     Uint32* dstrow = (Uint32*)comp_ctxt->cur_dst;
@@ -1536,34 +1540,34 @@ static CB_COMP_SETHLINE draw_pixel_span_ops [NR_ROPS][NR_PIXEL_LEN] =
 {
 
     {
-        _dc_draw_pixel_span_set_1, 
-        _dc_draw_pixel_span_set_2, 
-        _dc_draw_pixel_span_set_3, 
-        _dc_draw_pixel_span_set_4 
+        _dc_draw_pixel_span_set_1,
+        _dc_draw_pixel_span_set_2,
+        _dc_draw_pixel_span_set_3,
+        _dc_draw_pixel_span_set_4
     },
     {
-        _dc_draw_pixel_span_and_1, 
-        _dc_draw_pixel_span_and_2, 
-        _dc_draw_pixel_span_and_3, 
-        _dc_draw_pixel_span_and_4 
+        _dc_draw_pixel_span_and_1,
+        _dc_draw_pixel_span_and_2,
+        _dc_draw_pixel_span_and_3,
+        _dc_draw_pixel_span_and_4
     },
     {
-        _dc_draw_pixel_span_or_1, 
-        _dc_draw_pixel_span_or_2, 
-        _dc_draw_pixel_span_or_3, 
-        _dc_draw_pixel_span_or_4 
+        _dc_draw_pixel_span_or_1,
+        _dc_draw_pixel_span_or_2,
+        _dc_draw_pixel_span_or_3,
+        _dc_draw_pixel_span_or_4
     },
     {
-        _dc_draw_pixel_span_xor_1, 
-        _dc_draw_pixel_span_xor_2, 
-        _dc_draw_pixel_span_xor_3, 
-        _dc_draw_pixel_span_xor_4 
+        _dc_draw_pixel_span_xor_1,
+        _dc_draw_pixel_span_xor_2,
+        _dc_draw_pixel_span_xor_3,
+        _dc_draw_pixel_span_xor_4
     },
     {
-        _dc_draw_pixel_span_set_1, 
-        _dc_draw_pixel_span_set_2, 
-        _dc_draw_pixel_span_set_3, 
-        _dc_draw_pixel_span_set_4 
+        _dc_draw_pixel_span_set_1,
+        _dc_draw_pixel_span_set_2,
+        _dc_draw_pixel_span_set_3,
+        _dc_draw_pixel_span_set_4
     }
 };
 
@@ -1601,7 +1605,7 @@ static CB_COMP_PUTHLINE draw_src_span_ops [NR_ROPS][NR_PIXEL_LEN] =
     }
 };
 
-static DC_MOVE_TO move_to_ops [NR_PIXEL_LEN] = 
+static DC_MOVE_TO move_to_ops [NR_PIXEL_LEN] =
 {
     _dc_move_to_1,
     _dc_move_to_2,
@@ -1609,7 +1613,7 @@ static DC_MOVE_TO move_to_ops [NR_PIXEL_LEN] =
     _dc_move_to_4
 };
 
-static DC_STEP_X step_x_ops [NR_PIXEL_LEN] = 
+static DC_STEP_X step_x_ops [NR_PIXEL_LEN] =
 {
     _dc_step_x_1,
     _dc_step_x_2,
@@ -1729,11 +1733,11 @@ static void dc_InitDC (PDC pdc, HWND hWnd, BOOL bIsClient)
         pdc->pLogFont = GetSystemFont (SYSLOGFONT_WCHAR_DEF);
     pdc->tabstop = 8;
     pdc->CurTextPos.x = pdc->CurTextPos.y = 0;
-    pdc->cExtra = pdc->alExtra = pdc->blExtra = 0;
+    pdc->cExtra = pdc->wExtra = pdc->alExtra = pdc->blExtra = 0;
 
     pdc->mapmode = MM_TEXT;
     pdc->ta_flags = TA_LEFT | TA_TOP | TA_NOUPDATECP;
-    pdc->bidi_flags = 0;
+    pdc->bidi_flags = BIDI_FLAG_LTR;
 
     pdc->ViewOrig.x = pdc->ViewOrig.y = 0;
     pdc->ViewExtent.x = pdc->ViewExtent.y = 1;
@@ -1808,8 +1812,9 @@ static void dc_InitDC (PDC pdc, HWND hWnd, BOOL bIsClient)
         [pdc->surface->format->BytesPerPixel - 1];
     pdc->draw_src_span = draw_src_span_ops [pdc->rop]
         [pdc->surface->format->BytesPerPixel - 1];
+    pdc->user_comp_ctxt = pdc->surface->format;
 
-    pdc->cur_dst = (BYTE*)pdc->surface->pixels 
+    pdc->cur_dst = (BYTE*)pdc->surface->pixels
             + pdc->surface->pitch * pdc->DevRC.top
             + pdc->surface->format->BytesPerPixel * pdc->DevRC.left;
 
@@ -1820,7 +1825,7 @@ static void dc_InitDC (PDC pdc, HWND hWnd, BOOL bIsClient)
     SetBitmapScalerType((HDC)pdc, BITMAP_SCALER_DDA);
 }
 
-/* This function initilaizes a memory DC from a compliant reference dc 
+/* This function initilaizes a memory DC from a compliant reference dc
  * and copies the DC attributes from the refrence DC. */
 static void dc_InitMemDCFrom (PDC pdc, const PDC pdc_ref)
 {
@@ -1829,12 +1834,12 @@ static void dc_InitMemDCFrom (PDC pdc, const PDC pdc_ref)
 
     /* copy attributes from reference DC
      * gal_pixel bkcolor, pencolor, brushcolor, textcolor;
-     * int bkmode, tabstop, cExtra, alExtra, blExtra, mapmode, ta_flags, bidi_flags;
+     * int bkmode, tabstop, cExtra, wExtra, alExtra, blExtra, mapmode, ta_flags, bidi_flags;
      */
-    memcpy (&pdc->bkcolor, &pdc_ref->bkcolor, 
-                sizeof (gal_pixel)*4 + sizeof (int)*8);
+    memcpy (&pdc->bkcolor, &pdc_ref->bkcolor,
+                sizeof (gal_pixel)*4 + sizeof (int)*9);
 #ifdef _MGHAVE_ADV_2DAPI
-    memcpy (&pdc->pen_type, &pdc_ref->pen_type, 
+    memcpy (&pdc->pen_type, &pdc_ref->pen_type,
                 (sizeof(int)*7) + sizeof(POINT) + (sizeof (void*)*3));
 #endif
     pdc->pLogFont = pdc_ref->pLogFont;
@@ -1860,8 +1865,9 @@ static void dc_InitMemDCFrom (PDC pdc, const PDC pdc_ref)
         [pdc->surface->format->BytesPerPixel - 1];
     pdc->draw_src_span = draw_src_span_ops [pdc->rop]
         [pdc->surface->format->BytesPerPixel - 1];
+    pdc->user_comp_ctxt = pdc->surface->format;
 
-    pdc->cur_dst = (BYTE*)pdc->surface->pixels 
+    pdc->cur_dst = (BYTE*)pdc->surface->pixels
             + pdc->surface->pitch * pdc->DevRC.top
             + pdc->surface->format->BytesPerPixel * pdc->DevRC.left;
 
@@ -1894,11 +1900,11 @@ static void dc_InitScreenDC (PDC pdc, GAL_Surface *surface)
     pdc->pLogFont = GetSystemFont (SYSLOGFONT_WCHAR_DEF);
     pdc->tabstop = 8;
     pdc->CurTextPos.x = pdc->CurTextPos.y = 0;
-    pdc->cExtra = pdc->alExtra = pdc->blExtra = 0;
+    pdc->cExtra = pdc->wExtra = pdc->alExtra = pdc->blExtra = 0;
 
     pdc->mapmode = MM_TEXT;
     pdc->ta_flags = TA_LEFT | TA_TOP | TA_NOUPDATECP;
-    pdc->bidi_flags = 0;
+    pdc->bidi_flags = BIDI_FLAG_LTR;
 
     pdc->ViewOrig.x = pdc->ViewOrig.y = 0;
     pdc->ViewExtent.x = pdc->ViewExtent.y = 1;
@@ -1951,6 +1957,7 @@ static void dc_InitScreenDC (PDC pdc, GAL_Surface *surface)
         [pdc->surface->format->BytesPerPixel - 1];
     pdc->draw_src_span = draw_src_span_ops [pdc->rop]
         [pdc->surface->format->BytesPerPixel - 1];
+    pdc->user_comp_ctxt = pdc->surface->format;
 
     pdc->cur_dst = pdc->surface->pixels;
     pdc->move_to = move_to_ops [pdc->surface->format->BytesPerPixel - 1];
@@ -1962,7 +1969,7 @@ static void dc_InitScreenDC (PDC pdc, GAL_Surface *surface)
     /* Init bitmap scaler ALG */
     SetBitmapScalerType((HDC)pdc, BITMAP_SCALER_DDA);
 }
-        
+
 int GUIAPI GetRasterOperation (HDC hdc)
 {
     PDC pdc;
@@ -1988,6 +1995,7 @@ int GUIAPI SetRasterOperation (HDC hdc, int rop)
                 [pdc->surface->format->BytesPerPixel - 1];
         pdc->draw_src_span = draw_src_span_ops [rop]
                 [pdc->surface->format->BytesPerPixel - 1];
+        pdc->user_comp_ctxt = pdc->surface->format;
     }
 
     return old;
@@ -2064,7 +2072,7 @@ HDC GUIAPI GetDC(HWND hWnd)
  * Parameter:
  *     HDC hDC: The DC handle want to release.
  * Return:
- *     None. 
+ *     None.
  */
 void GUIAPI ReleaseDC (HDC hDC)
 {
@@ -2072,7 +2080,7 @@ void GUIAPI ReleaseDC (HDC hDC)
     PDC pdc;
 
     /* HDC_SCREEN and HDC_SCREEN_SYS is release by TerminateScreenDC ();*/
-    if (hDC == HDC_SCREEN || hDC == HDC_SCREEN_SYS) 
+    if (hDC == HDC_SCREEN || hDC == HDC_SCREEN_SYS)
         return;
 
     pdc = dc_HDC2PDC(hDC);
@@ -2136,7 +2144,7 @@ void GUIAPI ReleaseDC (HDC hDC)
     }
 }
 
-static BOOL InitSubDC (HDC hdcDest, HDC hdc, int off_x, int off_y, 
+static BOOL InitSubDC (HDC hdcDest, HDC hdc, int off_x, int off_y,
         int width, int height)
 {
     int parent_width,parent_height;
@@ -2146,7 +2154,7 @@ static BOOL InitSubDC (HDC hdcDest, HDC hdc, int off_x, int off_y,
     if(hdcDest == 0) return FALSE;
 
     pdc_parent = dc_HDC2PDC (hdc);
-    if (pdc_parent == NULL || pdc_parent->DataType != TYPE_HDC 
+    if (pdc_parent == NULL || pdc_parent->DataType != TYPE_HDC
             || pdc_parent->DCType == TYPE_SCRDC)
         return FALSE;
 
@@ -2173,7 +2181,7 @@ static BOOL InitSubDC (HDC hdcDest, HDC hdc, int off_x, int off_y,
     pdc->DevRC.bottom = pdc->DevRC.top + height;
     pdc->surface      = pdc_parent->surface;
     pdc->pGCRInfo     = pdc_parent->pGCRInfo;
-    
+
     dc_InitMemDCFrom(pdc, pdc_parent);
     /* should set after InitMemDC.*/
     pdc->hwnd         = pdc_parent->hwnd;
@@ -2203,13 +2211,13 @@ HDC GUIAPI GetSubDC (HDC hdc, int off_x, int off_y, int width, int height)
     PDC pdc_parent;
 
     pdc_parent = dc_HDC2PDC (hdc);
-    if (pdc_parent == NULL || pdc_parent->DataType != TYPE_HDC 
+    if (pdc_parent == NULL || pdc_parent->DataType != TYPE_HDC
             || pdc_parent->DCType == TYPE_SCRDC)
         return HDC_INVALID;
 
     parent_width = RECTW (pdc_parent->DevRC);
     parent_height = RECTH (pdc_parent->DevRC);
-    if ((off_x < 0 && pdc_parent->DCType != TYPE_MEMDC) || off_x  >=  parent_width 
+    if ((off_x < 0 && pdc_parent->DCType != TYPE_MEMDC) || off_x  >=  parent_width
             || (off_y < 0 && pdc_parent->DCType != TYPE_MEMDC) || off_y >= parent_height || width <= 0 || height <= 0)
         return HDC_INVALID;
 
@@ -2250,7 +2258,7 @@ HDC GUIAPI CreatePrivateDC(HWND hwnd)
     InitClipRgn (&pdc->lcrgn, &__mg_FreeClipRectList);
     MAKE_REGION_INFINITE(&pdc->lcrgn);
     InitClipRgn (&pdc->ecrgn, &__mg_FreeClipRectList);
-    
+
     pdc->inuse    = TRUE;
     pdc->DataType = TYPE_HDC;
     pdc->DCType   = TYPE_GENDC;
@@ -2269,7 +2277,7 @@ HDC GUIAPI CreatePrivateClientDC(HWND hwnd)
     MAKE_REGION_INFINITE(&pdc->lcrgn);
     InitClipRgn (&pdc->ecrgn, &__mg_FreeClipRectList);
     MAKE_REGION_INFINITE(&pdc->ecrgn);
-    
+
     pdc->inuse = TRUE;
     pdc->DataType = TYPE_HDC;
     pdc->DCType   = TYPE_GENDC;
@@ -2286,7 +2294,7 @@ HDC GUIAPI CreatePrivateSubDC(HDC hdc, int off_x, int off_y, int width, int heig
     InitClipRgn (&pdc->lcrgn, &__mg_FreeClipRectList);
     MAKE_REGION_INFINITE(&pdc->lcrgn);
     InitClipRgn (&pdc->ecrgn, &__mg_FreeClipRectList);
- 
+
     pdc->inuse = TRUE;
     pdc->DataType = TYPE_HDC;
     pdc->DCType   = TYPE_GENDC;
@@ -2304,7 +2312,7 @@ void GUIAPI DeletePrivateDC(HDC hdc)
     PDC pdc;
 
     pdc = (PDC)hdc;
-    
+
     if (pdc->alpha_pixel_format)
         GAL_FreeFormat (pdc->alpha_pixel_format);
 
@@ -2347,7 +2355,7 @@ HDC GUIAPI CreateSecondaryDC(HWND hwnd)
         pdc = dc_HDC2PDC (hdc);
         pdc->hwnd = hwnd;
     }
-    
+
     ReleaseDC (hdc_ref);
     return hdc;
 }
@@ -2358,7 +2366,7 @@ void GUIAPI DeleteSecondaryDC (HWND hwnd)
     if (pWin->secondaryDC) {
         DeleteMemDC (pWin->secondaryDC);
         pWin->secondaryDC = 0;
-    } 
+    }
 }
 
 HDC GUIAPI SetSecondaryDC (HWND hwnd, HDC secondary_dc,
@@ -2390,7 +2398,7 @@ HDC GUIAPI SetSecondaryDC (HWND hwnd, HDC secondary_dc,
         }
     }
 
-    if ((pWin->secondaryDC != secondary_dc) && 
+    if ((pWin->secondaryDC != secondary_dc) &&
             (pWin->dwExStyle & WS_EX_AUTOSECONDARYDC)) {
         DeleteSecondaryDC (hwnd);
         pWin->dwExStyle &= ~WS_EX_AUTOSECONDARYDC;
@@ -2407,7 +2415,7 @@ HDC GUIAPI SetSecondaryDC (HWND hwnd, HDC secondary_dc,
             pNext = pCtrl->next;
             if (pCtrl->dwExStyle & WS_EX_USEPRIVATECDC) {
                 ReleaseSecondarySubDC (pCtrl->privCDC);
-                pCtrl->privCDC = GetSecondarySubDC (pWin->secondaryDC, 
+                pCtrl->privCDC = GetSecondarySubDC (pWin->secondaryDC,
                         (HWND)pCtrl, TRUE);
             }
             pCtrl = pNext;
@@ -2416,7 +2424,7 @@ HDC GUIAPI SetSecondaryDC (HWND hwnd, HDC secondary_dc,
             DeletePrivateDC(pWin->privCDC);
         else
             ReleaseSecondarySubDC (pWin->privCDC);
-        pWin->privCDC = GetSecondarySubDC (secondary_dc, 
+        pWin->privCDC = GetSecondarySubDC (secondary_dc,
                 (HWND)pWin, TRUE);
     }
 
@@ -2431,15 +2439,15 @@ HDC GUIAPI SetSecondaryDC (HWND hwnd, HDC secondary_dc,
 HDC GUIAPI GetSecondaryDC (HWND hwnd)
 {
     PMAINWIN pWin;
- 
+
     MG_CHECK_RET (MG_IS_MAIN_WINDOW(hwnd), HDC_INVALID);
     pWin = MG_GET_WINDOW_PTR (hwnd);
 
     if (pWin->secondaryDC) {
         return pWin->secondaryDC;
-    } 
+    }
     return HDC_SCREEN;
-} 
+}
 #endif
 
 HDC GUIAPI GetSecondaryDC (HWND hwnd)
@@ -2450,7 +2458,7 @@ HDC GUIAPI GetSecondaryDC (HWND hwnd)
 #if 1
     if (MG_IS_MAIN_WINDOW(hwnd) && pWin->secondaryDC) {
         return pWin->secondaryDC;
-    } 
+    }
     else if (pWin->pMainWin->secondaryDC){
         return get_valid_dc (pWin, FALSE);
     }
@@ -2458,28 +2466,28 @@ HDC GUIAPI GetSecondaryDC (HWND hwnd)
     return get_valid_dc (pWin, TRUE);
 #endif
     return HDC_SCREEN;
-} 
+}
 
 HDC GUIAPI GetSecondaryClientDC (HWND hwnd)
 {
     PMAINWIN pWin;
     pWin = MG_GET_WINDOW_PTR (hwnd);
-    
+
     return get_valid_dc (pWin, TRUE);
-} 
+}
 
 void GUIAPI ReleaseSecondaryDC (HWND hwnd, HDC hdc)
 {
     PMAINWIN pWin;
- 
+
     pWin = MG_GET_WINDOW_PTR (hwnd);
 
-    if (MG_IS_MAIN_WINDOW(hwnd) && pWin->secondaryDC == hdc) 
+    if (MG_IS_MAIN_WINDOW(hwnd) && pWin->secondaryDC == hdc)
         return ;
     release_valid_dc (pWin, hdc);
 }
 
-static BOOL RestrictControlMemDCECRGNEx (RECT* minimal, 
+static BOOL RestrictControlMemDCECRGNEx (RECT* minimal,
         PCONTROL pCtrl, CLIPRGN * ergn)
 {
     RECT rc;
@@ -2569,17 +2577,17 @@ BOOL dc_GenerateMemDCECRgn(PDC pdc, BOOL fForce)
         while (pcr) {
             coor_DP2SP (pdc, &pcr->rc.left, &pcr->rc.top);
             coor_DP2SP (pdc, &pcr->rc.right, &pcr->rc.bottom);
-            
+
             pcr = pcr->next;
         }
 
         if (pdc->lcrgn.head) {
-            coor_DP2SP (pdc, &pdc->ecrgn.rcBound.left, 
+            coor_DP2SP (pdc, &pdc->ecrgn.rcBound.left,
                     &pdc->ecrgn.rcBound.top);
-            coor_DP2SP (pdc, &pdc->ecrgn.rcBound.right, 
+            coor_DP2SP (pdc, &pdc->ecrgn.rcBound.right,
                     &pdc->ecrgn.rcBound.bottom);
         }
-        /* 
+        /*
          * clipping region more with pdc->DevRC.
          */
         minimal = pdc->DevRC;
@@ -2608,8 +2616,8 @@ BOOL dc_GenerateMemDCECRgn(PDC pdc, BOOL fForce)
 /**
 * Function: Gets a secondary sub DC for a child window.
 *
-* secondary_dc: The secondary DC. 
-* hwnd_child: The handle to the child of the main window. 
+* secondary_dc: The secondary DC.
+* hwnd_child: The handle to the child of the main window.
 * client: Whether to create a child DC or a window DC.
 */
 
@@ -2639,7 +2647,7 @@ HDC GetSecondarySubDC (HDC secondary_dc, HWND hwnd_child, BOOL client)
     UNLOCK(&dcslot);
 
     if (i >= DCSLOTNUMBER) {
-        _MG_PRINTF ("NEWGDI>GetSecondarySubDC: no DC slot.\n");
+        _WRN_PRINTF ("NEWGDI>GetSecondarySubDC: no DC slot.");
         return HDC_SCREEN;
     }
 
@@ -2686,7 +2694,7 @@ HDC GetSecondarySubDC (HDC secondary_dc, HWND hwnd_child, BOOL client)
     InitClipRgn (&pdc->ecrgn, &__mg_FreeClipRectList);
     CopyRegion (&pdc->ecrgn, &pdc_parent->ecrgn);
 
-    /* 
+    /*
      * clipping region more with pdc->DevRC.
      */
     minimal = pdc->DevRC;
@@ -2716,7 +2724,7 @@ HDC GetSecondarySubDC (HDC secondary_dc, HWND hwnd_child, BOOL client)
 * Function: Release a secondary sub DC.
 *
 * secondary_subdc: The handle to the secondary sub DC.
-* hwnd_child: The handle to the child. 
+* hwnd_child: The handle to the child.
 */
 void ReleaseSecondarySubDC (HDC secondary_subdc)
 {
@@ -2724,7 +2732,7 @@ void ReleaseSecondarySubDC (HDC secondary_subdc)
 }
 
 /* LockDC/UnlockDC to get direct access to the pixels in a DC. */
-Uint8* GUIAPI LockDC (HDC hdc, const RECT* rw_rc, int* width, int* height, 
+Uint8* GUIAPI LockDC (HDC hdc, const RECT* rw_rc, int* width, int* height,
                 int* pitch)
 {
     PDC pdc;
@@ -2787,7 +2795,7 @@ static void DefaultDirectDrawFunc (HDC hdc, Uint8 * pixels,
     GAL_FillRect (pdc->surface, &gal_rect, pdc->cur_pixel);
 }
 
-BOOL GUIAPI LockDCEx (HDC hdc, const PCLIPRGN region, 
+BOOL GUIAPI LockDCEx (HDC hdc, const PCLIPRGN region,
         void* context, CB_DIRECT_DRAW_RECT cb)
 {
     PDC pdc;
@@ -2818,7 +2826,7 @@ BOOL GUIAPI LockDCEx (HDC hdc, const PCLIPRGN region,
 
     LOCK (&__mg_gdilock);
 
-    if (!dc_IsMemDC (pdc)) 
+    if (!dc_IsMemDC (pdc))
         kernel_ShowCursorForGDI (FALSE, pdc);
 
     pitch = pdc->surface->pitch;
@@ -2845,7 +2853,7 @@ BOOL GUIAPI LockDCEx (HDC hdc, const PCLIPRGN region,
             }
 
             pixels = (Uint8 *)pdc->surface->pixels + pitch * dest_rc.top;
-            
+
             /* direct draw invalid rectangle */
             cb (hdc, pixels, pitch, bpp, &dest_rc, context);
 
@@ -2853,7 +2861,7 @@ BOOL GUIAPI LockDCEx (HDC hdc, const PCLIPRGN region,
         }
 
         cliprc_src = cliprc_src->next;
-    } 
+    }
     return TRUE;
 }
 
@@ -2861,7 +2869,7 @@ void GUIAPI UnlockDC (HDC hdc)
 {
     PDC pdc = dc_HDC2PDC (hdc);
 
-    /* houhh 20090622, in multi thread if another thread 
+    /* houhh 20090622, in multi thread if another thread
      * set window not visible, this will be error and dead lock.*/
     if (!dc_IsVisible(pdc))
         return;
@@ -2905,7 +2913,7 @@ HDC GUIAPI CreateCompatibleDCEx (HDC hdc, int width, int height)
     LOCK (&__mg_gdilock);
     surface = GAL_CreateRGBSurface (flags,
                     width, height,
-                    pdc->surface->format->BitsPerPixel, 
+                    pdc->surface->format->BitsPerPixel,
                     pdc->surface->format->Rmask,
                     pdc->surface->format->Gmask,
                     pdc->surface->format->Bmask,
@@ -2919,18 +2927,18 @@ HDC GUIAPI CreateCompatibleDCEx (HDC hdc, int width, int height)
 
     /* Set surface attributes */
     if (pdc->surface->format->BitsPerPixel <= 8) {
-        GAL_SetPalette (surface, GAL_LOGPAL, 
-            (GAL_Color*) pdc->surface->format->palette->colors, 
+        GAL_SetPalette (surface, GAL_LOGPAL,
+            (GAL_Color*) pdc->surface->format->palette->colors,
             0, 1<<pdc->surface->format->BitsPerPixel);
     }
 
     if (pdc->surface->flags & GAL_SRCALPHA) {
-        GAL_SetAlpha (surface, GAL_SRCALPHA, 
+        GAL_SetAlpha (surface, GAL_SRCALPHA,
                     pdc->surface->format->alpha);
     }
 
     if (pdc->surface->flags & GAL_SRCCOLORKEY) {
-        GAL_SetColorKey (surface, GAL_SRCCOLORKEY, 
+        GAL_SetColorKey (surface, GAL_SRCCOLORKEY,
                 pdc->surface->format->colorkey);
     }
 
@@ -2954,7 +2962,7 @@ HDC GUIAPI CreateCompatibleDCEx (HDC hdc, int width, int height)
     InitClipRgn (&pmem_dc->ecrgn, &__mg_FreeClipRectList);
     SetClipRgn (&pmem_dc->ecrgn, &pmem_dc->DevRC);
     IntersectClipRect(&pmem_dc->lcrgn, &pmem_dc->DevRC);
-    
+
     return (HDC)pmem_dc;
 }
 
@@ -2978,7 +2986,7 @@ BOOL GUIAPI IsCompatibleDC (HDC hdc1, HDC hdc2)
 }
 
 HDC GUIAPI CreateMemDCEx (int width, int height, int depth, DWORD flags,
-        Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask, 
+        Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask,
         void* bits, int pitch)
 {
     PDC pmem_dc = NULL;
@@ -3032,7 +3040,7 @@ HDC GUIAPI CreateMemDCEx (int width, int height, int depth, DWORD flags,
     return (HDC)pmem_dc;
 }
 
-HDC GUIAPI CreateSubMemDC (HDC parent, int off_x, int off_y, 
+HDC GUIAPI CreateSubMemDC (HDC parent, int off_x, int off_y,
                 int width, int height, BOOL comp_to_parent)
 {
     PDC pdc_parent;
@@ -3041,7 +3049,7 @@ HDC GUIAPI CreateSubMemDC (HDC parent, int off_x, int off_y,
     BYTE* sub_pixels;
     int parent_width;
     int parent_height;
- 
+
     pdc_parent = dc_HDC2PDC (parent);
     if (pdc_parent->DCType != TYPE_MEMDC)
         return HDC_INVALID;
@@ -3061,7 +3069,7 @@ HDC GUIAPI CreateSubMemDC (HDC parent, int off_x, int off_y,
         width = pdc_parent->DevRC.right - off_x;
     if (off_y + height > pdc_parent->DevRC.bottom)
         height = pdc_parent->DevRC.bottom - off_y;
-    
+
     if (!(pdc_sub = malloc (sizeof(DC))))
         return HDC_INVALID;
 
@@ -3097,18 +3105,18 @@ HDC GUIAPI CreateSubMemDC (HDC parent, int off_x, int off_y,
 
         /* Set surface attributes */
         if (pdc_parent->surface->format->BitsPerPixel <= 8) {
-            GAL_SetPalette (surface, GAL_LOGPAL, 
-                        pdc_parent->surface->format->palette->colors, 
+            GAL_SetPalette (surface, GAL_LOGPAL,
+                        pdc_parent->surface->format->palette->colors,
                         0, 1<<pdc_parent->surface->format->BitsPerPixel);
         }
 
         if (pdc_parent->surface->flags & GAL_SRCALPHA) {
-            GAL_SetAlpha (surface, GAL_SRCALPHA, 
+            GAL_SetAlpha (surface, GAL_SRCALPHA,
                         pdc_parent->surface->format->alpha);
         }
 
         if (pdc_parent->surface->flags & GAL_SRCCOLORKEY) {
-            GAL_SetColorKey (surface, GAL_SRCCOLORKEY, 
+            GAL_SetColorKey (surface, GAL_SRCCOLORKEY,
                     pdc_parent->surface->format->colorkey);
         }
     }
@@ -3142,17 +3150,17 @@ HDC GUIAPI CreateMemDCFromBitmap (HDC hdc, const BITMAP* bmp)
     Uint32 Rmask = 0, Gmask = 0, Bmask = 0, Amask = 0;
 
     pdc = dc_HDC2PDC (hdc);
-    
+
     Rmask = pdc->surface->format->Rmask;
     Gmask = pdc->surface->format->Gmask;
     Bmask = pdc->surface->format->Bmask;
     Amask = pdc->surface->format->Amask;
-    
+
     if (!(pmem_dc = malloc (sizeof(DC))))
         return HDC_INVALID;
 
-    surface = GAL_CreateRGBSurfaceFrom (bmp->bmBits, 
-                    bmp->bmWidth, bmp->bmHeight, bmp->bmBitsPerPixel, 
+    surface = GAL_CreateRGBSurfaceFrom (bmp->bmBits,
+                    bmp->bmWidth, bmp->bmHeight, bmp->bmBitsPerPixel,
                     bmp->bmPitch, Rmask, Gmask, Bmask, Amask);
 
     if (!surface) {
@@ -3162,8 +3170,8 @@ HDC GUIAPI CreateMemDCFromBitmap (HDC hdc, const BITMAP* bmp)
 
     /* Set surface attributes */
     if (bmp->bmBitsPerPixel <= 8) {
-        GAL_SetPalette (surface, GAL_LOGPAL, 
-                        pdc->surface->format->palette->colors, 0, 
+        GAL_SetPalette (surface, GAL_LOGPAL,
+                        pdc->surface->format->palette->colors, 0,
                         1<<bmp->bmBitsPerPixel);
     }
 
@@ -3275,7 +3283,7 @@ HDC GUIAPI CreateMemDCFromMyBitmap (const MYBITMAP* my_bmp, const RGB* pal)
 
     /* Set surface attributes */
     if (my_bmp->depth <= 8) {
-        GAL_SetPalette (surface, GAL_LOGPAL, (GAL_Color*) pal, 0, 
+        GAL_SetPalette (surface, GAL_LOGPAL, (GAL_Color*) pal, 0,
                 1<<my_bmp->depth);
     }
 
@@ -3284,7 +3292,7 @@ HDC GUIAPI CreateMemDCFromMyBitmap (const MYBITMAP* my_bmp, const RGB* pal)
     }
 
     if (my_bmp->flags & MYBMP_TRANSPARENT) {
-        GAL_SetColorKey (surface, GAL_SRCCOLORKEY, 
+        GAL_SetColorKey (surface, GAL_SRCCOLORKEY,
                 my_bmp->transparent);
     }
 
@@ -3319,7 +3327,7 @@ BOOL GUIAPI ConvertMemDC (HDC mem_dc, HDC ref_dc, DWORD flags)
     pmem_dc = dc_HDC2PDC (mem_dc);
     pref_dc = dc_HDC2PDC (ref_dc);
 
-    new_surface = GAL_ConvertSurface (pmem_dc->surface, 
+    new_surface = GAL_ConvertSurface (pmem_dc->surface,
                 pref_dc->surface->format, flags);
     if (!new_surface)
         return FALSE;
@@ -3332,14 +3340,14 @@ BOOL GUIAPI ConvertMemDC (HDC mem_dc, HDC ref_dc, DWORD flags)
 BOOL GUIAPI SetMemDCAlpha (HDC mem_dc, DWORD flags, Uint8 alpha)
 {
     BOOL ret;
-    DWORD tmp_flag = flags; 
+    DWORD tmp_flag = flags;
     PDC pmem_dc = dc_HDC2PDC (mem_dc);
 
     ret = !GAL_SetAlpha (pmem_dc->surface, flags, alpha);
 
-    if ((tmp_flag & MEMDC_FLAG_SRCALPHA) 
+    if ((tmp_flag & MEMDC_FLAG_SRCALPHA)
             && (tmp_flag & MEMDC_FLAG_SRCPIXELALPHA))
-        ret = !GAL_SetAlpha (pmem_dc->surface, 
+        ret = !GAL_SetAlpha (pmem_dc->surface,
                 tmp_flag & (~MEMDC_FLAG_SRCALPHA), alpha);
 
     return ret;
@@ -3355,7 +3363,7 @@ BOOL GUIAPI SetMemDCColorKey (HDC mem_dc, DWORD flags, Uint32 color_key)
 void GUIAPI DeleteMemDC (HDC hdc)
 {
     PDC pmem_dc;
-    
+
     pmem_dc = dc_HDC2PDC(hdc);
 
     GAL_FreeSurface (pmem_dc->surface);
@@ -3369,7 +3377,7 @@ void GUIAPI DeleteMemDC (HDC hdc)
     free (pmem_dc);
 }
 
-HDC GUIAPI InitSlaveScreen (const char* name, const char* mode)
+HDC GUIAPI InitSlaveScreenEx (const char* name, const char* mode, int dpi)
 {
     PDC pmem_dc = NULL;
     GAL_Surface* surface = NULL;
@@ -3378,13 +3386,13 @@ HDC GUIAPI InitSlaveScreen (const char* name, const char* mode)
     if (!(pmem_dc = malloc (sizeof(DC))))
         return HDC_INVALID;
 
-    if ((surface = gal_SlaveVideoInit(name, mode))) {
-        dc_InitScreenDC (pmem_dc, surface); 
+    if ((surface = gal_SlaveVideoInit(name, mode, dpi))) {
+        dc_InitScreenDC (pmem_dc, surface);
         return (HDC)pmem_dc;
     }
     else {
         free (pmem_dc);
-        _MG_PRINTF ("NEWGDI>InitSlaveScreen: Can not init the slave screen: %s (%s)\n",
+        _WRN_PRINTF ("Can not init the slave screen: %s (%s)",
                         name, mode);
         return HDC_INVALID;
     }
@@ -3393,7 +3401,7 @@ HDC GUIAPI InitSlaveScreen (const char* name, const char* mode)
 void TerminateSlaveScreen (HDC hdc)
 {
     PDC pmem_dc;
-    
+
     if (hdc == HDC_INVALID)
         return;
 
@@ -3405,7 +3413,7 @@ void TerminateSlaveScreen (HDC hdc)
     if (pmem_dc->alpha_pixel_format)
         GAL_FreeFormat (pmem_dc->alpha_pixel_format);
 
-    EmptyClipRgn (&pmem_dc->ecrgn); 
+    EmptyClipRgn (&pmem_dc->ecrgn);
     gal_SlaveVideoQuit (pmem_dc->surface);
 
     free (pmem_dc);
@@ -3430,11 +3438,11 @@ HWND GUIAPI WindowFromDC (HDC hdc)
 typedef struct _DCSTATE
 {
     GAL_Color bkcolor, pencolor, brushcolor, textcolor;
-    /* bkmode, tabstop, cExtra, alExtra, blExtra, mapmode, ta_flags, bidi_flags */
-    char attrs_g1 [sizeof(int)*8];
+    /* bkmode, tabstop, cExtra, wExtra, alExtra, blExtra, mapmode, ta_flags, bidi_flags */
+    char attrs_g1 [sizeof(int)*9];
 
 #ifdef _MGHAVE_ADV_2DAPI
-    /* 
+    /*
      * int: pen_type, pen_cap_style, pen_join_style, pen_width, brush_type;
      * POINT: brush_orig;
      * void*: brush_tile, brush_stipple;
@@ -3493,7 +3501,7 @@ int GUIAPI SaveDC (HDC hdc)
 
     if (pdc->surface->format->palette) {
         dc_state->pal.ncolors = pdc->surface->format->palette->ncolors;
-        dc_state->pal.colors = calloc (dc_state->pal.ncolors, 
+        dc_state->pal.colors = calloc (dc_state->pal.ncolors,
                 sizeof (GAL_Color));
 
         if (dc_state->pal.colors == NULL)
@@ -3505,16 +3513,16 @@ int GUIAPI SaveDC (HDC hdc)
     if (!ClipRgnCopy (&dc_state->lcrgn, &pdc->lcrgn))
         goto fail;
 
-    GAL_GetRGBA (pdc->bkcolor, pdc->surface->format, 
+    GAL_GetRGBA (pdc->bkcolor, pdc->surface->format,
                 &dc_state->bkcolor.r, &dc_state->bkcolor.g,
                 &dc_state->bkcolor.b, &dc_state->bkcolor.a);
-    GAL_GetRGBA (pdc->pencolor, pdc->surface->format, 
+    GAL_GetRGBA (pdc->pencolor, pdc->surface->format,
                 &dc_state->pencolor.r, &dc_state->pencolor.g,
                 &dc_state->pencolor.b, &dc_state->pencolor.a);
-    GAL_GetRGBA (pdc->brushcolor, pdc->surface->format, 
+    GAL_GetRGBA (pdc->brushcolor, pdc->surface->format,
                 &dc_state->brushcolor.r, &dc_state->brushcolor.g,
                 &dc_state->brushcolor.b, &dc_state->brushcolor.a);
-    GAL_GetRGBA (pdc->textcolor, pdc->surface->format, 
+    GAL_GetRGBA (pdc->textcolor, pdc->surface->format,
                 &dc_state->textcolor.r, &dc_state->textcolor.g,
                 &dc_state->textcolor.b, &dc_state->textcolor.a);
 
@@ -3571,7 +3579,7 @@ BOOL GUIAPI RestoreDC (HDC hdc, int saved_dc)
     DCSTATE* dc_state;
     PDC pdc;
 
-    if ((saved_dc == 0) || 
+    if ((saved_dc == 0) ||
                 (saved_dc > nr_dc_states) || (-saved_dc > nr_dc_states))
         return FALSE;
 
@@ -3600,7 +3608,7 @@ BOOL GUIAPI RestoreDC (HDC hdc, int saved_dc)
     }
 
     dc_state = dc_state_stack;
-    if (pdc->surface->format->palette 
+    if (pdc->surface->format->palette
             && dc_state->pal.ncolors == pdc->surface->format->palette->ncolors){
         memcpy (pdc->surface->format->palette->colors, dc_state->pal.colors,
                 sizeof (GAL_Color) * dc_state->pal.ncolors);
@@ -3608,17 +3616,17 @@ BOOL GUIAPI RestoreDC (HDC hdc, int saved_dc)
 
     EmptyClipRgn (&pdc->lcrgn);
     pdc->lcrgn = dc_state->lcrgn;
-    
-    pdc->bkcolor = GAL_MapRGBA (pdc->surface->format, 
+
+    pdc->bkcolor = GAL_MapRGBA (pdc->surface->format,
                 dc_state->bkcolor.r, dc_state->bkcolor.g,
                 dc_state->bkcolor.b, dc_state->bkcolor.a);
-    pdc->pencolor = GAL_MapRGBA (pdc->surface->format, 
+    pdc->pencolor = GAL_MapRGBA (pdc->surface->format,
                 dc_state->pencolor.r, dc_state->pencolor.g,
                 dc_state->pencolor.b, dc_state->pencolor.a);
-    pdc->brushcolor = GAL_MapRGBA (pdc->surface->format, 
+    pdc->brushcolor = GAL_MapRGBA (pdc->surface->format,
                 dc_state->brushcolor.r, dc_state->brushcolor.g,
                 dc_state->brushcolor.b, dc_state->brushcolor.a);
-    pdc->textcolor = GAL_MapRGBA (pdc->surface->format, 
+    pdc->textcolor = GAL_MapRGBA (pdc->surface->format,
                 dc_state->textcolor.r, dc_state->textcolor.g,
                 dc_state->textcolor.b, dc_state->textcolor.a);
 
@@ -3639,6 +3647,7 @@ BOOL GUIAPI RestoreDC (HDC hdc, int saved_dc)
             [pdc->surface->format->BytesPerPixel - 1];
         pdc->draw_src_span = draw_src_span_ops [pdc->rop]
             [pdc->surface->format->BytesPerPixel - 1];
+        pdc->user_comp_ctxt = pdc->surface->format;
     }
     else if (ROP_COMP_USER == pdc->rop) {
         pdc->draw_pixel = dc_state->user_set_pixel;
@@ -3673,7 +3682,7 @@ BOOL GUIAPI RestoreDC (HDC hdc, int saved_dc)
     return TRUE;
 }
 
-MG_EXPORT int GUIAPI SetUserCompositionOps (HDC hdc, CB_COMP_SETPIXEL comp_setpixel, 
+MG_EXPORT int GUIAPI SetUserCompositionOps (HDC hdc, CB_COMP_SETPIXEL comp_setpixel,
         CB_COMP_SETHLINE comp_sethline, CB_COMP_PUTHLINE comp_puthline, void* user_ctxt)
 {
     PDC pdc = dc_HDC2PDC (hdc);

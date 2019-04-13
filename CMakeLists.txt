@@ -122,7 +122,7 @@ mg_set_value (_MGGAL_HI3510     gal_hi35xx)
 mg_set_value (_MGGAL_HI3560     gal_hi35xx)
 
 if (gal_shadow OR gal_mlshadow)
-    set (MINIGUI_LIBRARIES_LIST "${MINIGUI_LIBRARIES_LIST} -lpthread")
+    set (MINIGUI_LIBRARIES_LIST "${MINIGUI_LIBRARIES_LIST}")
 endif (gal_shadow OR gal_mlshadow)
 
 ############## IAL ################

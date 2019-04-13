@@ -981,7 +981,7 @@ CheckMLShadowVideo()
                 [Define if include MLShadow NEWGAL engine])
       VIDEO_SUBDIRS="$VIDEO_SUBDIRS mlshadow"
       VIDEO_DRIVERS="$VIDEO_DRIVERS mlshadow/libvideo_mlshadow.la"
-      DEP_LIBS="$DEP_LIBS -lpthread"
+      DEP_LIBS="$DEP_LIBS"
     fi
 }
 
@@ -997,7 +997,7 @@ CheckShadowVideo()
                 [Define if include Shadow NEWGAL engine])
       VIDEO_SUBDIRS="$VIDEO_SUBDIRS shadow"
       VIDEO_DRIVERS="$VIDEO_DRIVERS shadow/libvideo_shadow.la"
-      DEP_LIBS="$DEP_LIBS -lpthread"
+      DEP_LIBS="$DEP_LIBS"
     fi
 }
 
@@ -1258,7 +1258,7 @@ CheckNexusVideo()
                 [Define if include nexus NEWGAL engine])
       VIDEO_SUBDIRS="$VIDEO_SUBDIRS nexus"
       VIDEO_DRIVERS="$VIDEO_DRIVERS nexus/libvideo_nexus.la"
-      DEP_LIBS="$DEP_LIBS -lnexus -lpthread -lm -lz"
+      DEP_LIBS="$DEP_LIBS -lnexus -lm -lz"
     fi
 }
 
@@ -2527,7 +2527,7 @@ fi
 #fi
 
 # Always link to pthread
-DEP_LIBS="$DEP_LIBS -lpthread"
+DEP_LIBS="$DEP_LIBS"
 
 AC_SUBST(VIDEO_SUBDIRS)
 AC_SUBST(VIDEO_DRIVERS)

@@ -1081,7 +1081,7 @@ static void* load_font_data (DEVFONT* devfont,
         // According to OS/2 table information,
         // change the style information for dev font.
 
-        TT_OS2* tt_os2 = (TT_OS2*)FT_Get_Sfnt_Table (face, FT_SFNT_OS2);
+        TT_OS2* tt_os2 = (TT_OS2*)FT_Get_Sfnt_Table (face, ft_sfnt_os2);
         unsigned int weight_style = FS_WEIGHT_REGULAR;
         if (tt_os2->usWeightClass >= 100 && tt_os2->usWeightClass <= 900) {
             weight_style = (tt_os2->usWeightClass/100 * 10);

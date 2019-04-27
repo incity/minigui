@@ -645,7 +645,9 @@ static char* get_res_file(const char* res_name, char* filename)
         struct stat buf;
         if(stat(res_name, &buf) == 0
             && !S_ISDIR(buf.st_mode)
-            && (buf.st_mode&S_IRUSR))
+            /*&& (buf.st_mode&S_IRUSR)*/) // there is a problem when file is in a
+                                            // fat32 filesystem, this will always
+                                                // return false.
 #endif
         {
             return (char*)res_name;

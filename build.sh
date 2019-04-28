@@ -20,7 +20,7 @@ if [ ! -f "./configure" ];then
     
 fi
 
-OUTPUT=/home/suyc/V3S/minigui-git/output
+OUTPUT=/home/suyc/V3S/camdroid/device/softwinner/tiger-cdr/app/XiaoE/3rd-party/minigui
 
 CC=$ANDROID_BUILD_TOP/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.6/bin/arm-linux-androideabi-gcc \
 AR=$ANDROID_BUILD_TOP/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.6/bin/arm-linux-androideabi-ar \
@@ -36,7 +36,7 @@ PKG_CONFIG_PATH=$OUTPUT/lib/pkgconfig \
 --disable-cursor --disable-dummyial --disable-consoleial --disable-consoleps2 \
 --disable-consolems --disable-consolems3 --disable-textmode --disable-newtextedit \
 --disable-videoqvfb --disable-minimalgdi --disable-dlcustomial --enable-msgstr \
---disable-videopcxvfb --with-runmode=ths
+--disable-videopcxvfb --with-runmode=ths --disable-complexscripts
 
 #sed -i 's/\/\* #undef HAVE_GETPAGESIZE \*\//#define HAVE_GETPAGESIZE   1/g' mgconfig.h
 #sed -i 's/\/\* #undef HAVE_MMAP \*\//#define HAVE_MMAP   1/g' mgconfig.h

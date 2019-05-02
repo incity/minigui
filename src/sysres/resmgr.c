@@ -659,7 +659,7 @@ static char* get_res_file(const char* res_name, char* filename)
 #ifndef __NOUNIX__
         struct stat buf;
         sprintf(filename,"%s/%s", res_paths[i], res_name);
-        if(stat(filename, &buf) == 0 && !S_ISDIR(buf.st_mode) && (buf.st_mode&S_IRUSR))
+        if(stat(filename, &buf) == 0 && !S_ISDIR(buf.st_mode) /*&& (buf.st_mode&S_IRUSR)*/)
 #else
         sprintf(filename,"%s/%s", res_paths[i], res_name);
 #ifndef __VXWORKS__

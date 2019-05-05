@@ -20,7 +20,7 @@ if [ ! -f "./configure" ];then
     
 fi
 
-OUTPUT=/home/suyc/V3S/camdroid/device/softwinner/tiger-cdr/app/XiaoE/3rd-party/minigui
+OUTPUT=/home/suyc/V3S/camdroid/device/softwinner/tiger-cdr/app/XiaoE/3rd-party
 
 CC=$ANDROID_BUILD_TOP/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.6/bin/arm-linux-androideabi-gcc \
 AR=$ANDROID_BUILD_TOP/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.6/bin/arm-linux-androideabi-ar \
@@ -29,9 +29,9 @@ CFLAGS="-O3 -I$ANDROID_BUILD_TOP/hardware/libhardware_legacy/include -I$ANDROID_
 PKG_CONFIG=/usr/bin/pkg-config \
 PKG_CONFIG_PATH=$OUTPUT/lib/pkgconfig \
 ./configure --host=arm-none-linux --target=arm-eabi  \
---enable-tslibial  --enable-static --enable-shared \
+--enable-tslibial  --enable-static --disable-shared \
 --prefix=$OUTPUT \
---with-ft2-includes=$ANDROID_BUILD_TOP/external/freetype/include \
+--enable-ttfsupport --with-ft2-includes=$ANDROID_BUILD_TOP/external/freetype/include \
 --disable-screensaver --enable-adv2dapi --disable-flatlf --disable-dblclk \
 --disable-cursor --disable-dummyial --disable-consoleial --disable-consoleps2 \
 --disable-consolems --disable-consolems3 --disable-textmode --disable-newtextedit \
